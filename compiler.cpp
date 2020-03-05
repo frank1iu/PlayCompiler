@@ -6,10 +6,6 @@
 
 using namespace std;
 
-void Compiler::emit(string msg) {
-    cout << msg << endl;
-}
-
 vector<string> Compiler::define_static(string name, int len, int* init_val) {
     vector<string> p;
     p.push_back(name + ":");
@@ -42,4 +38,8 @@ vector<string> Compiler::compile_program(Token* program) {
         *v = program -> children.at(1) -> getValue();
         return define_static(program -> children.at(0) -> getName(), 1, v);
     } else throw "Unrecognized s-expression";
+}
+
+Compiler::Compiler() {
+    registers = {0, 0, 0, 0, 0, -1, -1, 0};
 }
