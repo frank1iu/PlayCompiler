@@ -20,6 +20,5 @@ int main() {
     print_vector(c.compile_program(parseOne("(set! x 10)")));
     print_vector(c.compile_program(parseOne("(set! x 1)")));
     print_vector(c.compile_program(parseOne("(define x 5)")));
-    cout << c.registers[5];
 }
 

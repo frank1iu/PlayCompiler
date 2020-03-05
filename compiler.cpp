@@ -40,6 +40,46 @@ vector<string> Compiler::compile_program(Token* program) {
     } else throw "Unrecognized s-expression";
 }
 
+vector<string> Compiler::load_into_register(Token* program, int* r_dest) {
+    vector<string> p;
+    if (program -> children.size() != 0) {
+        throw "Compiler::load_into_register cannot take an expression!";
+    } else {
+        if (program -> type == IDENTIFIER) {
+            p.push_back(load_addr(program -> getName(), r_dest).at(0));
+            p.push_back("\tld (r" + to_string(*r_dest) + "), r" + to_string(*r_dest));
+        } else if (program -> type == VALUE) {
+            *r_dest = rc_ralloc();
+            p.push_back("\tld $" + to_string(program -> getValue()) + ", r" + to_string(*r_dest));
+        }
+    }
+    return p;
+}
+
+vector<string> Compiler::load_addr(string name, int* r_dest) {
+    vector<string> p;
+    *r_dest = rc_ralloc();
+    p.push_back("\tld $" + name + ", r" + to_string(*r_dest));
+    return p;
+}
+
+int Compiler::rc_ralloc() {
+    for (int i = 0; i < registers.size(); i++) {
+        if (registers[i] == 0) {
+            registers[i]++;
+            return i;
+        }
+    }
+    throw "rc_ralloc cannot find a free register!";
+}
+int Compiler::rc_keep_ref(int r_dest) {
+    registers[r_dest]++;
+}
+int Compiler::rc_free_ref(int r_dest) {
+    if (registers[r_dest] == 0) throw "rc_free_ref: double free";
+    registers[r_dest]--;
+}
+
 Compiler::Compiler() {
     registers = {0, 0, 0, 0, 0, -1, -1, 0};
 }

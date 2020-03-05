@@ -1,5 +1,6 @@
 #include "catch.hpp"
 #include "parser.hpp"
+#include "compiler.hpp"
 
 TEST_CASE( "Parser::check_valid", "[parse]" ) {
     string program = "";
@@ -92,4 +93,38 @@ TEST_CASE( "Parser::parse", "[parse]" ) {
     REQUIRE( t -> children.at(0) -> children.size() == 3 );
     REQUIRE( t -> children.size() == 2 );
     REQUIRE( t -> children.at(1) -> getName() == "d" );
+}
+
+TEST_CASE( "Compiler ralloc reference counting ", "[compile]" ) {
+    Compiler c;
+    int first = c.rc_ralloc();
+    REQUIRE( first == 0 );
+    c.rc_keep_ref(first);
+    REQUIRE( c.registers[first] == 2);
+
+    int second = c.rc_ralloc();
+    REQUIRE( second == 1 );
+
+    c.rc_free_ref(first);
+    c.rc_free_ref(first);
+    int third = c.rc_ralloc();
+    REQUIRE( third == 0 );
+}
+
+TEST_CASE( "Compiler::load ", "[compile]") {
+    Compiler c;
+    Token *t = new Token("test");
+    int i;
+    vector<string> p = c.load_into_register(t, &i);
+    REQUIRE( i == 0 );
+    REQUIRE( p.at(0) == "\tld $test, r0" );
+    REQUIRE( p.at(1) == "\tld (r0), r0" );
+    REQUIRE( p.size() == 2 );
+
+    c.rc_free_ref(i);
+    t = new Token("123");
+    p = c.load_into_register(t, &i);
+    REQUIRE( i == 0 );
+    REQUIRE( p.at(0) == "\tld $123, r0" );
+    REQUIRE( p.size() == 1 );
 }
