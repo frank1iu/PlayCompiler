@@ -17,10 +17,8 @@ void print_vector(vector<string> v) {
 
 int main() {
     Compiler c;
-    vector<string> program = c.compile_program(parseOne("(set! x (+ 1 1))"));
+    vector<string> program = c.compile_program(parseOne("(set! x (+ 1 (+ 2 3)))"));
     int q;
     print_vector(program);
-    //print_vector(c.compile_program(parseOne("(set! x 1)")));
-    //print_vector(c.compile_program(parseOne("(define x 5)")));
 }
 

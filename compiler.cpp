@@ -73,15 +73,12 @@ vector<string> Compiler::eval(Token* program, int* r_dest) {
     vector<string> p;
     const string op = program -> getName();
     if (op == "+") {
-        int r_temp;
-        concat(p, load_into_register(
-            program -> children.at(0), &r_temp
-        ));
-        concat(p, load_into_register(
-            program -> children.at(1), r_dest
-        ));
-        p.push_back("\tadd r" + to_string(r_temp) + ", r" + to_string(*r_dest));
+        int r_temp, r_temp2;
+        concat(p, eval(program -> children.at(0), &r_temp));
+        concat(p, eval(program -> children.at(1), &r_temp2));
+        p.push_back("\tadd r" + to_string(r_temp) + ", r" + to_string(r_temp2));
         rc_free_ref(r_temp);
+        *r_dest = r_temp2;
     } else if (op == "-") {
         int r_temp;
         concat(p, load_into_register(
