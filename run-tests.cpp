@@ -128,3 +128,21 @@ TEST_CASE( "Compiler::load ", "[compile]") {
     REQUIRE( p.at(0) == "\tld $123, r0" );
     REQUIRE( p.size() == 1 );
 }
+
+TEST_CASE( "Compiler::eval ", "[compile]") {
+    Compiler c;
+    Token *t = new Token("test");
+    int i;
+    vector<string> p = c.eval(t, &i);
+    REQUIRE( i == 0 );
+    REQUIRE( p.at(0) == "\tld $test, r0" );
+    REQUIRE( p.at(1) == "\tld (r0), r0" );
+    REQUIRE( p.size() == 2 );
+
+    c.rc_free_ref(i);
+    t = new Token("123");
+    p = c.eval(t, &i);
+    REQUIRE( i == 0 );
+    REQUIRE( p.at(0) == "\tld $123, r0" );
+    REQUIRE( p.size() == 1 );
+}

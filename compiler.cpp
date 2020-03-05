@@ -21,18 +21,21 @@ vector<string> Compiler::define_static(string name, int len, int* init_val) {
     return p;
 }
 
-vector<string> Compiler::store_constant(string name, int val) {
+vector<string> Compiler::store_value(string name, int r) {
     vector<string> p;
     p.push_back("\tld $" + name + ", r0");
-    p.push_back("\tld $" + to_string(val) + ", r1");
-    p.push_back("\tst r1, (r0)");
+    p.push_back("\tst r" + to_string(r) + ", (r0)");
+    rc_free_ref(r);
     return p;
 }
 
 vector<string> Compiler::compile_program(Token* program) {
+    vector<string> p;
     if (program -> getName() == "set!") {
-        return store_constant(program -> children.at(0) -> getName(),
-        program -> children.at(1) -> getValue());
+        int r;
+        concat(p, eval(program -> children.at(1), &r));
+        concat(p, store_value(program -> children.at(0) -> getName(), r));
+        return p;
     } else if (program -> getName() == "define") {
         int *v = new int;
         *v = program -> children.at(1) -> getValue();
@@ -46,7 +49,7 @@ vector<string> Compiler::load_into_register(Token* program, int* r_dest) {
         throw "Compiler::load_into_register cannot take an expression!";
     } else {
         if (program -> type == IDENTIFIER) {
-            p.push_back(load_addr(program -> getName(), r_dest).at(0));
+            concat(p, load_addr(program -> getName(), r_dest));
             p.push_back("\tld (r" + to_string(*r_dest) + "), r" + to_string(*r_dest));
         } else if (program -> type == VALUE) {
             *r_dest = rc_ralloc();
@@ -60,6 +63,36 @@ vector<string> Compiler::load_addr(string name, int* r_dest) {
     vector<string> p;
     *r_dest = rc_ralloc();
     p.push_back("\tld $" + name + ", r" + to_string(*r_dest));
+    return p;
+}
+
+vector<string> Compiler::eval(Token* program, int* r_dest) {
+    if (program -> type == VALUE || program -> children.size() == 0) {
+        return load_into_register(program, r_dest);
+    }
+    vector<string> p;
+    const string op = program -> getName();
+    if (op == "+") {
+        int r_temp;
+        concat(p, load_into_register(
+            program -> children.at(0), &r_temp
+        ));
+        concat(p, load_into_register(
+            program -> children.at(1), r_dest
+        ));
+        p.push_back("\tadd r" + to_string(r_temp) + ", r" + to_string(*r_dest));
+        rc_free_ref(r_temp);
+    } else if (op == "-") {
+        int r_temp;
+        concat(p, load_into_register(
+            program -> children.at(0), &r_temp
+        ));
+        concat(p, load_into_register(
+            program -> children.at(1), r_dest
+        ));
+        p.push_back("\tsub r" + to_string(r_temp) + ", r" + to_string(*r_dest));
+        rc_free_ref(r_temp);
+    }
     return p;
 }
 
