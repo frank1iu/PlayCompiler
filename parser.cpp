@@ -126,3 +126,17 @@ Token::~Token() {
         delete t;
     }
 }
+
+string Token::toString() const {
+    if (type == VALUE) {
+        return to_string(getValue());
+    }
+    if (children.size() == 0) {
+        return getName();
+    }
+    string ret = "(" + getName();
+    for (Token* t : children) {
+        ret += " " + t -> toString();
+    }
+    return ret + ")";
+}

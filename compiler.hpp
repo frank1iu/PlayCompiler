@@ -15,7 +15,7 @@ class Compiler {
     bool all_registers_free() const;
     Compiler();
 
-    private:
+    //private:
     bool static_data_phase = false;
     vector<string> eval(Token* program, int* r_dest);
     vector<string> load_into_register(Token* program, int* r_dest);

@@ -73,6 +73,7 @@ TEST_CASE( "Parser::parse", "[parse]" ) {
     REQUIRE( t -> getName() == "add1" );
     REQUIRE( t -> children.size() == 1 );
     REQUIRE( t -> children.at(0) -> getValue() == 4 );
+    REQUIRE( t -> toString() == program );
     delete t;
 
     program = "(outer d (inner a b c))";
@@ -84,6 +85,7 @@ TEST_CASE( "Parser::parse", "[parse]" ) {
     REQUIRE( t -> children.at(0) -> children.size() == 0 );
     REQUIRE( t -> children.at(1) -> getName() == "inner" );
     REQUIRE( t -> children.size() == 2 );
+    REQUIRE( t -> toString() == program );
     delete t;
 
     program = "(outer (inner a b c) d)";
@@ -95,6 +97,7 @@ TEST_CASE( "Parser::parse", "[parse]" ) {
     REQUIRE( t -> children.at(0) -> children.size() == 3 );
     REQUIRE( t -> children.size() == 2 );
     REQUIRE( t -> children.at(1) -> getName() == "d" );
+    REQUIRE( t -> toString() == program );
     delete t;
 }
 

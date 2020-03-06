@@ -33,6 +33,7 @@ int main() {
     Compiler c;
     for (Token* t : exprs) {
         vector<string> v = c.compile_program(t);
+        // cout << t -> toString() << endl;
         print_vector(v);
     }
     if (!c.all_registers_free())

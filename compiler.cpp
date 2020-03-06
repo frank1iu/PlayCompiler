@@ -10,7 +10,7 @@ vector<string> Compiler::define_static(string name, int len, int* init_val) {
     vector<string> p;
     if (!static_data_phase) {
         static_data_phase = true;
-        p.push_back("halt");
+        p.push_back("\thalt");
         p.push_back(".pos 0x4000");
     }
     p.push_back(name + ":");

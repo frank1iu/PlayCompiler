@@ -17,6 +17,7 @@ class Token {
         enum Type type;
         void* data;
         vector<Token*> children;
+        string toString() const;
 
         Token(enum Type type, void* data);
         Token(string data);
