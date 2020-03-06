@@ -15,15 +15,22 @@ enum Type {
 class Token {
     public:
         enum Type type;
+        // data is int*    if type == VALUE
+        //         string* if type == IDENTIFIER
         void* data;
         vector<Token*> children;
+        // returns a string representation of the token
         string toString() const;
+        // returns the value of the VALUE token
+        // ensure this token has type VALUE before calling
+        int getValue() const;
+        // returns the value of the IDENTIFIER token
+        // ensure this token has type IDENTIFIER before calling
+        string getName() const;
 
         Token(enum Type type, void* data);
         Token(string data);
         ~Token();
-        int getValue() const;
-        string getName() const;
 };
 
 class Parser {

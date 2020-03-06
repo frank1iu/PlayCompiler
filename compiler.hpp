@@ -7,14 +7,16 @@ using namespace std;
 
 class Compiler {
     public:
+    // reference counts of each register
     array<int, 8> registers;
     vector<string> compile_program(Token* program);
+    // allocates or frees registers with reference counting
+    // throws std::runtime_error if all registers are in use
     int rc_ralloc();
     int rc_keep_ref(int r_dest);
     int rc_free_ref(int r_dest);
     bool all_registers_free() const;
     Compiler();
-
     //private:
     bool static_data_phase = false;
     vector<string> eval(Token* program, int* r_dest);
