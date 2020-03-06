@@ -95,7 +95,7 @@ TEST_CASE( "Parser::parse", "[parse]" ) {
     REQUIRE( t -> children.at(1) -> getName() == "d" );
 }
 
-TEST_CASE( "Compiler ralloc reference counting ", "[compile]" ) {
+TEST_CASE( "Compiler ralloc reference counting", "[compile]" ) {
     Compiler c;
     int first = c.rc_ralloc();
     REQUIRE( first == 0 );
@@ -111,7 +111,7 @@ TEST_CASE( "Compiler ralloc reference counting ", "[compile]" ) {
     REQUIRE( third == 0 );
 }
 
-TEST_CASE( "Compiler::load ", "[compile]") {
+TEST_CASE( "Compiler::load", "[compile]") {
     Compiler c;
     Token *t = new Token("test");
     int i;
@@ -129,7 +129,7 @@ TEST_CASE( "Compiler::load ", "[compile]") {
     REQUIRE( p.size() == 1 );
 }
 
-TEST_CASE( "Compiler::eval ", "[compile]") {
+TEST_CASE( "Compiler::eval", "[compile]") {
     Compiler c;
     Token *t = new Token("test");
     int i;
@@ -138,11 +138,16 @@ TEST_CASE( "Compiler::eval ", "[compile]") {
     REQUIRE( p.at(0) == "\tld $test, r0" );
     REQUIRE( p.at(1) == "\tld (r0), r0" );
     REQUIRE( p.size() == 2 );
+    REQUIRE( c.registers[0] == 1 );
 
     c.rc_free_ref(i);
-    t = new Token("123");
+    REQUIRE( c.registers[0] == 0 );
+
+    t = Parser::parse_expression("(+ 1 2)");
     p = c.eval(t, &i);
-    REQUIRE( i == 0 );
-    REQUIRE( p.at(0) == "\tld $123, r0" );
-    REQUIRE( p.size() == 1 );
+    REQUIRE( i == 1 );
+    REQUIRE( p.at(0) == "\tld $1, r0" );
+    REQUIRE( p.at(1) == "\tld $2, r1" );
+    REQUIRE( p.at(2) == "\tadd r0, r1" );
+    REQUIRE( p.size() == 3 );
 }

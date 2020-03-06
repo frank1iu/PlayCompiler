@@ -6,7 +6,7 @@ vector<string> Parser::split_expressions(string program) {
     vector<string> ret;
     stack<enum Paren> s;
     int last_index = 0;
-    if (!check_valid(program)) throw "Syntax Error: Paren Mismatch";
+    if (!check_valid(program)) throw runtime_error("Syntax Error: Paren Mismatch");
 
     for (int i = 0; i < program.length(); i++) {
         if (s.empty() && (program[i] == ' ' || program[i] == '\n')) {
@@ -41,7 +41,7 @@ bool Parser::check_valid(string program) {
 }
 
 queue<string> Parser::queue_tokens(string program) {
-    if (!check_valid(program)) throw "Syntax Error: Paren Mismatch";
+    if (!check_valid(program)) throw runtime_error("Syntax Error: Paren Mismatch");
     string program_formatted;
     for (const char c : program) {
         switch (c) {
@@ -72,7 +72,7 @@ queue<string> Parser::queue_tokens(string program) {
 }
 
 Token* Parser::parse(queue<string> & tokens_raw) {
-    if (tokens_raw.empty()) throw "Parser::parse expected non-empty queue";
+    if (tokens_raw.empty()) throw runtime_error("Parser::parse expected non-empty queue");
     if (tokens_raw.front() == "(") tokens_raw.pop(); // pop off the '(', if any
     string top = tokens_raw.front(); tokens_raw.pop();
     Token* token = new Token(top);
@@ -107,11 +107,16 @@ Token::Token(string data) {
 }
 
 int Token::getValue() const {
-    if (type != VALUE) throw "Type Error: Expected a value, found an identifier";
+    if (type != VALUE) throw runtime_error("Type Error: Expected a value, found an identifier");
     return * (int*) data;
 }
 
 string Token::getName() const {
-    if (type != IDENTIFIER) throw "Type Error: Expected an identifier, found a value";
+    if (type != IDENTIFIER) throw runtime_error("Type Error: Expected an identifier, found a value");
     return * (string*) data;
+}
+
+Token* Parser::parse_expression(string program) {
+    queue<string> tokens = Parser::queue_tokens(program);
+    return Parser::parse(tokens);
 }

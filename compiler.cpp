@@ -40,13 +40,13 @@ vector<string> Compiler::compile_program(Token* program) {
         int *v = new int;
         *v = program -> children.at(1) -> getValue();
         return define_static(program -> children.at(0) -> getName(), 1, v);
-    } else throw "Unrecognized s-expression";
+    } else throw runtime_error("Unrecognized s-expression");
 }
 
 vector<string> Compiler::load_into_register(Token* program, int* r_dest) {
     vector<string> p;
     if (program -> children.size() != 0) {
-        throw "Compiler::load_into_register cannot take an expression!";
+        throw runtime_error("Compiler::load_into_register cannot take an expression!");
     } else {
         if (program -> type == IDENTIFIER) {
             concat(p, load_addr(program -> getName(), r_dest));
@@ -95,13 +95,13 @@ int Compiler::rc_ralloc() {
             return i;
         }
     }
-    throw "rc_ralloc cannot find a free register!";
+    throw runtime_error("rc_ralloc cannot find a free register!");
 }
 int Compiler::rc_keep_ref(int r_dest) {
     registers[r_dest]++;
 }
 int Compiler::rc_free_ref(int r_dest) {
-    if (registers[r_dest] == 0) throw "rc_free_ref: double free";
+    if (registers[r_dest] == 0) throw runtime_error("rc_free_ref: double free");
     registers[r_dest]--;
 }
 

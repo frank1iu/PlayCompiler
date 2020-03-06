@@ -10,16 +10,11 @@ void print_vector(vector<string> v) {
     }
 }
 
-Token* parseOne(string program) {
-    queue<string> tokens = Parser::queue_tokens(program);
-    return Parser::parse(tokens);
-}
-
 vector<Token*> parseMany(string program) {
     vector<string> exprs = Parser::split_expressions(program);
     vector<Token*> ret;
     for (string s : exprs) {
-        ret.push_back(parseOne(s));
+        ret.push_back(Parser::parse_expression(s));
     }
     return ret;
 }

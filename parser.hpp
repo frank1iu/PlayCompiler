@@ -27,6 +27,8 @@ class Token {
 class Parser {
     public:
         // Parses a *single* s-expression into a Token
+        static Token* parse_expression(string program);
+
         // tokens_raw must represent a valid, single s-expression
         static Token* parse(queue<string> & tokens_raw);
 
