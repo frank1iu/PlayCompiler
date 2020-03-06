@@ -1,9 +1,6 @@
-(; set! c (& d2))          (; c = &d2)
-(; set! c (- c ALIGN))    (; c = d2 - 1)
-(; set! c (* c))          (; c = *(d - 1) = d)
-(; set! c (add1 c))       (; c += 1)
-
 (set! a (* (+ ALIGN (& d)))) (; a = *(&d + 1))
+
+(set! c (- 0 a))
 
 (define a 0)
 
