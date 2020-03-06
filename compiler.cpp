@@ -23,9 +23,10 @@ vector<string> Compiler::define_static(string name, int len, int* init_val) {
 
 vector<string> Compiler::store_value(string name, int r) {
     vector<string> p;
-    p.push_back("\tld $" + name + ", r0");
-    p.push_back("\tst r" + to_string(r) + ", (r0)");
-    rc_free_ref(r);
+    int temp = rc_ralloc();
+    p.push_back("\tld $" + name + ", r" + to_string(temp));
+    p.push_back("\tst r" + to_string(r) + ", (r" + to_string(temp) + ")");
+    rc_free_ref(temp);
     return p;
 }
 
@@ -35,6 +36,7 @@ vector<string> Compiler::compile_program(Token* program) {
         int r;
         concat(p, eval(program -> children.at(1), &r));
         concat(p, store_value(program -> children.at(0) -> getName(), r));
+        rc_free_ref(r);
         return p;
     } else if (program -> getName() == "define") {
         int *v = new int;
@@ -78,11 +80,16 @@ vector<string> Compiler::eval(Token* program, int* r_dest) {
         concat(p, eval(program -> children.at(1), r_dest));
         p.push_back("\tadd r" + to_string(r_temp) + ", r" + to_string(*r_dest));
         rc_free_ref(r_temp);
-    } else if (op == "-") {
+    } else if (op == "not") {
+        concat(p, eval(program -> children.at(0), r_dest));
+        p.push_back("\tnot r" + to_string(*r_dest));
+    } else if (op == "&") {
+        p.push_back(load_addr(program -> children.at(0) -> getName(), r_dest).at(0));
+    } else if (op == "*") {
         int r_temp;
         concat(p, eval(program -> children.at(0), &r_temp));
-        concat(p, eval(program -> children.at(1), r_dest));
-        p.push_back("\tsub r" + to_string(r_temp) + ", r" + to_string(*r_dest));
+        *r_dest = rc_ralloc();
+        p.push_back("\tld (r" + to_string(r_temp) + "), r" + to_string(*r_dest));
         rc_free_ref(r_temp);
     }
     return p;
@@ -107,4 +114,13 @@ int Compiler::rc_free_ref(int r_dest) {
 
 Compiler::Compiler() {
     registers = {0, 0, 0, 0, 0, -1, -1, 0};
+};
+
+bool Compiler::all_registers_free() const {
+    for (int i = 0; i < registers.size(); i++) {
+        if (registers[i] > 0) {
+            return false;
+        }
+    }
+    return true;
 }

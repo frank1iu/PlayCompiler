@@ -17,8 +17,14 @@ class Compiler {
     int rc_ralloc();
     int rc_keep_ref(int r_dest);
     int rc_free_ref(int r_dest);
+    bool all_registers_free() const;
+
     Compiler();
     private:
+    int last_label = 0;
+    string next_label() {
+        return "L" + to_string(last_label++);
+    }
     void concat(vector<string> & a, vector<string> c) {
         vector<string> b = c;
         a.insert(a.end(), b.begin(), b.end());

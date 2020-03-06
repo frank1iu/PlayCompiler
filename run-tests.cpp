@@ -151,3 +151,23 @@ TEST_CASE( "Compiler::eval", "[compile]") {
     REQUIRE( p.at(2) == "\tadd r0, r1" );
     REQUIRE( p.size() == 3 );
 }
+
+TEST_CASE( "Compiler::ref/deref", "[compile]") {
+    Compiler c;
+    Token *t = Parser::parse_expression("(& name)");
+    int dest;
+    vector<string> p = c.eval(t, &dest);
+    REQUIRE( p.at(0) == "\tld $name, r0" );
+    REQUIRE( p.size() == 1 );
+    REQUIRE( dest == 0 );
+    c.rc_free_ref(dest);
+
+    t = Parser::parse_expression("(* 100)");
+    p = c.eval(t, &dest);
+    REQUIRE( p.at(0) == "\tld $100, r0" );
+    REQUIRE( p.at(1) == "\tld (r0), r1" );
+    REQUIRE( p.size() == 2 );
+    REQUIRE( dest == 1 );
+    c.rc_free_ref(dest);
+    REQUIRE( c.all_registers_free() );
+}

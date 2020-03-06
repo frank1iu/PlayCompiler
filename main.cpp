@@ -24,7 +24,7 @@ string read_program() {
     while (getline(cin, tmp)) {
         program += tmp;
     }
-    return tmp;
+    return program;
 }
 
 int main() {
@@ -35,5 +35,7 @@ int main() {
         vector<string> v = c.compile_program(t);
         print_vector(v);
     }
+    if (!c.all_registers_free())
+        cerr << "[Warn] Register leak found" << endl;
 }
 
