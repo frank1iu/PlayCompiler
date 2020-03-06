@@ -73,6 +73,7 @@ TEST_CASE( "Parser::parse", "[parse]" ) {
     REQUIRE( t -> getName() == "add1" );
     REQUIRE( t -> children.size() == 1 );
     REQUIRE( t -> children.at(0) -> getValue() == 4 );
+    delete t;
 
     program = "(outer d (inner a b c))";
     tokens = Parser::queue_tokens(program);
@@ -83,6 +84,7 @@ TEST_CASE( "Parser::parse", "[parse]" ) {
     REQUIRE( t -> children.at(0) -> children.size() == 0 );
     REQUIRE( t -> children.at(1) -> getName() == "inner" );
     REQUIRE( t -> children.size() == 2 );
+    delete t;
 
     program = "(outer (inner a b c) d)";
     tokens = Parser::queue_tokens(program);
@@ -93,6 +95,7 @@ TEST_CASE( "Parser::parse", "[parse]" ) {
     REQUIRE( t -> children.at(0) -> children.size() == 3 );
     REQUIRE( t -> children.size() == 2 );
     REQUIRE( t -> children.at(1) -> getName() == "d" );
+    delete t;
 }
 
 TEST_CASE( "Compiler ralloc reference counting", "[compile]" ) {
@@ -141,6 +144,7 @@ TEST_CASE( "Compiler::eval", "[compile]") {
     REQUIRE( p.at(1) == "\tld (r0), r0" );
     REQUIRE( p.size() == 2 );
     REQUIRE( c.registers[0] == 1 );
+    delete t;
 
     c.rc_free_ref(i);
     REQUIRE( c.registers[0] == 0 );
@@ -153,9 +157,9 @@ TEST_CASE( "Compiler::eval", "[compile]") {
     REQUIRE( p.at(2) == "\tadd r0, r1" );
     REQUIRE( p.size() == 3 );
     c.rc_free_ref(i);
-
-    t = Parser::parse_expression("(- 3 1)");
+    delete t;
     /*
+    t = Parser::parse_expression("(- 3 1)");
     p = c.eval(t, &i);
     REQUIRE( i == 1 );
     REQUIRE( p.at(0) == "\tld $3, r0" );
@@ -163,7 +167,7 @@ TEST_CASE( "Compiler::eval", "[compile]") {
     REQUIRE( p.at(2) == "\tadd r0, r1" );
     REQUIRE( p.size() == 3 );
     c.rc_free_ref(i);*/
-    
+
     t = Parser::parse_expression("(not a)");
     p = c.eval(t, &i);
     REQUIRE( p.at(0) == "\tld $a, r0" );
@@ -171,6 +175,7 @@ TEST_CASE( "Compiler::eval", "[compile]") {
     REQUIRE( p.at(2) == "\tnot r0" );
     REQUIRE( p.size() == 3 );
     c.rc_free_ref(i);
+    delete t;
 
     t = Parser::parse_expression("(add1 a)");
     p = c.eval(t, &i);
@@ -179,6 +184,7 @@ TEST_CASE( "Compiler::eval", "[compile]") {
     REQUIRE( p.at(2) == "\tinc r0" );
     REQUIRE( p.size() == 3 );
     c.rc_free_ref(i);
+    delete t;
 }
 
 TEST_CASE( "Compiler::ref/deref", "[compile]") {
@@ -190,6 +196,7 @@ TEST_CASE( "Compiler::ref/deref", "[compile]") {
     REQUIRE( p.size() == 1 );
     REQUIRE( dest == 0 );
     c.rc_free_ref(dest);
+    delete t;
 
     t = Parser::parse_expression("(* 100)");
     p = c.eval(t, &dest);
@@ -199,4 +206,5 @@ TEST_CASE( "Compiler::ref/deref", "[compile]") {
     REQUIRE( dest == 1 );
     c.rc_free_ref(dest);
     REQUIRE( c.all_registers_free() );
+    delete t;
 }

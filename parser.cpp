@@ -120,3 +120,9 @@ Token* Parser::parse_expression(string program) {
     queue<string> tokens = Parser::queue_tokens(program);
     return Parser::parse(tokens);
 }
+
+Token::~Token() {
+    for (Token* t : children) {
+        delete t;
+    }
+}

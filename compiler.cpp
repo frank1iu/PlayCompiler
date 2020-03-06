@@ -97,6 +97,7 @@ vector<string> Compiler::eval(Token* program, int* r_dest) {
     } else {
         throw runtime_error("Compiler::eval: unrecognized identifier" + program -> getName());
     }
+    delete program;
     return p;
 }
 

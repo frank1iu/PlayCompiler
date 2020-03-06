@@ -20,6 +20,7 @@ class Token {
 
         Token(enum Type type, void* data);
         Token(string data);
+        ~Token();
         int getValue() const;
         string getName() const;
 };
