@@ -122,11 +122,13 @@ TEST_CASE( "Compiler::load", "[compile]") {
     REQUIRE( p.size() == 2 );
 
     c.rc_free_ref(i);
+    delete t;
     t = new Token("123");
     p = c.load_into_register(t, &i);
     REQUIRE( i == 0 );
     REQUIRE( p.at(0) == "\tld $123, r0" );
     REQUIRE( p.size() == 1 );
+    delete t;
 }
 
 TEST_CASE( "Compiler::eval", "[compile]") {
