@@ -21,6 +21,7 @@ class Compiler {
 
     Compiler();
     private:
+    bool static_data_phase = false;
     vector<string> expr_not(Token* program, int* r_dest);
     vector<string> expr_sub(Token* program, int* r_dest);
     vector<string> expr_add(Token* program, int* r_dest);

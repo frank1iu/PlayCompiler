@@ -8,6 +8,11 @@ using namespace std;
 
 vector<string> Compiler::define_static(string name, int len, int* init_val) {
     vector<string> p;
+    if (!static_data_phase) {
+        static_data_phase = true;
+        p.push_back("halt");
+        p.push_back(".pos 0x4000");
+    }
     p.push_back(name + ":");
     for (int i = 0; i < len; i++) {
         string out = "\t.long\t";
@@ -32,6 +37,9 @@ vector<string> Compiler::store_value(string name, int r) {
 
 vector<string> Compiler::compile_program(Token* program) {
     vector<string> p;
+    if (program -> getName() != "define" && static_data_phase) {
+        throw runtime_error("Non-define expression found in static data phase!");
+    }
     if (program -> getName() == "set!") {
         int r;
         concat(p, eval(program -> children.at(1), &r));
