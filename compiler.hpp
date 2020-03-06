@@ -21,6 +21,12 @@ class Compiler {
 
     Compiler();
     private:
+    vector<string> expr_not(Token* program, int* r_dest);
+    vector<string> expr_sub(Token* program, int* r_dest);
+    vector<string> expr_add(Token* program, int* r_dest);
+    vector<string> expr_add1(Token* program, int* r_dest);
+
+
     int last_label = 0;
     string next_label() {
         return "L" + to_string(last_label++);

@@ -79,14 +79,13 @@ vector<string> Compiler::eval(Token* program, int* r_dest) {
     vector<string> p;
     const string op = program -> getName();
     if (op == "+") {
-        int r_temp;
-        concat(p, eval(program -> children.at(0), &r_temp));
-        concat(p, eval(program -> children.at(1), r_dest));
-        p.push_back("\tadd r" + to_string(r_temp) + ", r" + to_string(*r_dest));
-        rc_free_ref(r_temp);
+        return expr_add(program, r_dest);
+    } else if (op == "-") {
+        return expr_sub(program, r_dest);
     } else if (op == "not") {
-        concat(p, eval(program -> children.at(0), r_dest));
-        p.push_back("\tnot r" + to_string(*r_dest));
+        return expr_not(program, r_dest);
+    } else if (op == "add1") {
+        return expr_add1(program, r_dest);
     } else if (op == "&") {
         p.push_back(load_addr(program -> children.at(0) -> getName(), r_dest).at(0));
     } else if (op == "*") {
@@ -98,6 +97,44 @@ vector<string> Compiler::eval(Token* program, int* r_dest) {
     } else {
         throw runtime_error("Compiler::eval: unrecognized identifier" + program -> getName());
     }
+    return p;
+}
+
+vector<string> Compiler::expr_sub(Token* program, int* r_dest) {
+    if (program -> children.size() < 2) {
+        throw runtime_error("?");
+    }
+    Token *transformed = new Token("+");
+    transformed -> children.push_back(program -> children.at(0));
+    Token *not_child = new Token("not");
+    Token *add1_child = new Token("add1");
+    not_child -> children.push_back(program -> children.at(1));
+    add1_child -> children.push_back(not_child);
+    transformed -> children.push_back(add1_child);
+    return eval(transformed, r_dest);
+}
+
+vector<string> Compiler::expr_add(Token* program, int* r_dest) {
+    vector<string> p;
+    int r_temp;
+    concat(p, eval(program -> children.at(0), &r_temp));
+    concat(p, eval(program -> children.at(1), r_dest));
+    p.push_back("\tadd r" + to_string(r_temp) + ", r" + to_string(*r_dest));
+    rc_free_ref(r_temp);
+    return p;
+}
+
+vector<string> Compiler::expr_add1(Token* program, int* r_dest) {
+    vector<string> p;
+    concat(p, eval(program -> children.at(0), r_dest));
+    p.push_back("\tinc r" + to_string(*r_dest));
+    return p;
+}
+
+vector<string> Compiler::expr_not(Token* program, int* r_dest) {
+    vector<string> p;
+    concat(p, eval(program -> children.at(0), r_dest));
+    p.push_back("\tnot r" + to_string(*r_dest));
     return p;
 }
 

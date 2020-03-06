@@ -152,6 +152,33 @@ TEST_CASE( "Compiler::eval", "[compile]") {
     REQUIRE( p.at(1) == "\tld $2, r1" );
     REQUIRE( p.at(2) == "\tadd r0, r1" );
     REQUIRE( p.size() == 3 );
+    c.rc_free_ref(i);
+
+    t = Parser::parse_expression("(- 3 1)");
+    /*
+    p = c.eval(t, &i);
+    REQUIRE( i == 1 );
+    REQUIRE( p.at(0) == "\tld $3, r0" );
+    REQUIRE( p.at(1) == "\tld $1, r1" );
+    REQUIRE( p.at(2) == "\tadd r0, r1" );
+    REQUIRE( p.size() == 3 );
+    c.rc_free_ref(i);*/
+    
+    t = Parser::parse_expression("(not a)");
+    p = c.eval(t, &i);
+    REQUIRE( p.at(0) == "\tld $a, r0" );
+    REQUIRE( p.at(1) == "\tld (r0), r0" );
+    REQUIRE( p.at(2) == "\tnot r0" );
+    REQUIRE( p.size() == 3 );
+    c.rc_free_ref(i);
+
+    t = Parser::parse_expression("(add1 a)");
+    p = c.eval(t, &i);
+    REQUIRE( p.at(0) == "\tld $a, r0" );
+    REQUIRE( p.at(1) == "\tld (r0), r0" );
+    REQUIRE( p.at(2) == "\tinc r0" );
+    REQUIRE( p.size() == 3 );
+    c.rc_free_ref(i);
 }
 
 TEST_CASE( "Compiler::ref/deref", "[compile]") {
