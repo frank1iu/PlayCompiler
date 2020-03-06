@@ -42,7 +42,11 @@ vector<string> Compiler::compile_program(Token* program) {
         int *v = new int;
         *v = program -> children.at(1) -> getValue();
         return define_static(program -> children.at(0) -> getName(), 1, v);
-    } else throw runtime_error("Unrecognized s-expression");
+    } else if (program -> getName() == ";") {
+        return p;
+    } else {
+        throw runtime_error("Unrecognized s-expression");
+    }
 }
 
 vector<string> Compiler::load_into_register(Token* program, int* r_dest) {
@@ -91,6 +95,8 @@ vector<string> Compiler::eval(Token* program, int* r_dest) {
         *r_dest = rc_ralloc();
         p.push_back("\tld (r" + to_string(r_temp) + "), r" + to_string(*r_dest));
         rc_free_ref(r_temp);
+    } else {
+        throw runtime_error("Compiler::eval: unrecognized identifier" + program -> getName());
     }
     return p;
 }

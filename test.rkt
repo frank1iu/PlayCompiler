@@ -1,11 +1,13 @@
-(set! c (& d))
+(set! c (& d))          (; c = &d)
 
-(set! c (+ c 4))
+(set! c (+ c ALIGN))    (; c = (d + 1))
 
-(set! c (* c))
+(set! c (* c))          (; c = *(d + 1) = e)
 
-(define c 2)
+(define c 0)
 
 (define d 4)
 
-(define e 5)
+(define d2 5)
+
+(define ALIGN 4)
