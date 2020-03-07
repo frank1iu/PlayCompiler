@@ -2,6 +2,8 @@
 
 (set! c (- 0 a))
 
+(set! d (add1 d))
+
 (define a 0)
 
 (define c 0)

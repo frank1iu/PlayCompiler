@@ -28,6 +28,7 @@ class Compiler {
     vector<string> expr_sub(Token* program, int* r_dest);
     vector<string> expr_add(Token* program, int* r_dest);
     vector<string> expr_add1(Token* program, int* r_dest);
+    //vector<string> expr_while(Token* program);
     int last_label = 0;
     string next_label() {
         return "L" + to_string(last_label++);
