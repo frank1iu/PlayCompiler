@@ -30,15 +30,8 @@ class Compiler {
     int expr_add(Token* program);
     int expr_add1(Token* program);
     int expr_begin(Token* program);
-    //vector<string> load_into_register(Token* program, int* r_dest);
-    //vector<string> load_addr(string name, int* r_dest);
-    //vector<string> define_static(string name, int len, int* init_val);
-    //vector<string> store_value(string name, int r);
-    //vector<string> expr_not(Token* program, int* r_dest);
-    //vector<string> expr_sub(Token* program, int* r_dest);
-    //vector<string> expr_add(Token* program, int* r_dest);
-    //vector<string> expr_add1(Token* program, int* r_dest);
-    //vector<string> expr_while(Token* program);
+    int expr_addr(Token* program);
+    int expr_deref(Token* program);
     int last_label = 0;
     string next_label();
     string rtos(int r) const;

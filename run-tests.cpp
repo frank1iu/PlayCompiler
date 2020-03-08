@@ -137,7 +137,7 @@ TEST_CASE( "Compiler set", "[compile]") {
     REQUIRE(c.asm_code.at(0) == "ld $1, r0\t# 1");
     REQUIRE(c.asm_code.at(1) == "ld $asdf, r1\t# (set! asdf 1)");
     REQUIRE(c.asm_code.at(2) == "st r0, (r1)\t# (set! asdf 1)");
-    REQUIRE(c.asm_code.size() == 3);
+    REQUIRE(c.asm_code.size() == 4);
     REQUIRE(c.all_registers_free());
 }
 
@@ -149,13 +149,18 @@ TEST_CASE( "Compiler add", "[compile]") {
     REQUIRE(c.asm_code.at(2) == "add r0, r1\t# (+ 2 3)");
     REQUIRE(c.asm_code.at(3) == "ld $test, r0\t# (set! test (+ 2 3))");
     REQUIRE(c.asm_code.at(4) == "st r1, (r0)\t# (set! test (+ 2 3))");
-    REQUIRE(c.asm_code.size() == 5);
+    REQUIRE(c.asm_code.size() == 6);
     REQUIRE(c.all_registers_free());
 
     Compiler c2;
     c2.compile_program("(add1 2)");
     REQUIRE(c2.asm_code.at(0) == "ld $2, r0\t# 2");
     REQUIRE(c2.asm_code.at(1) == "inc r0\t# (add1 2)");
+
+    Compiler c3;
+    c3.compile_program("(add1 #true)");
+    REQUIRE(c3.asm_code.at(0) == "ld $1, r0\t# 1");
+    REQUIRE(c3.asm_code.at(1) == "inc r0\t# (add1 #true)");
 }
 
 TEST_CASE( "Compiler sub", "[compile]") {
@@ -166,92 +171,5 @@ TEST_CASE( "Compiler sub", "[compile]") {
     REQUIRE(c.asm_code.at(2) == "inc r1\t# (add1 2)");
     REQUIRE(c.asm_code.at(3) == "not r1\t# (not (add1 2))");
     REQUIRE(c.asm_code.at(4) == "add r0, r1\t# (+ 1 (not (add1 2)))");
-    REQUIRE(c.asm_code.size() == 5);
+    REQUIRE(c.asm_code.size() == 6);
 }
-
-/*
-TEST_CASE( "Compiler::load", "[compile]") {
-    Compiler c;
-    Token *t = new Token("test");
-    int i;
-    vector<string> p = c.load_into_register(t, &i);
-    REQUIRE( i == 0 );
-    REQUIRE( p.at(0) == "\tld $test, r0" );
-    REQUIRE( p.at(1) == "\tld (r0), r0" );
-    REQUIRE( p.size() == 2 );
-
-    c.rc_free_ref(i);
-    delete t;
-    t = new Token("123");
-    p = c.load_into_register(t, &i);
-    REQUIRE( i == 0 );
-    REQUIRE( p.at(0) == "\tld $123, r0" );
-    REQUIRE( p.size() == 1 );
-    delete t;
-}
-
-TEST_CASE( "Compiler::eval", "[compile]") {
-    Compiler c;
-    Token *t = new Token("test");
-    int i;
-    vector<string> p = c.eval(t, &i);
-    REQUIRE( i == 0 );
-    REQUIRE( p.at(0) == "\tld $test, r0" );
-    REQUIRE( p.at(1) == "\tld (r0), r0" );
-    REQUIRE( p.size() == 2 );
-    REQUIRE( c.registers[0] == 1 );
-    delete t;
-
-    c.rc_free_ref(i);
-    REQUIRE( c.registers[0] == 0 );
-
-    t = Parser::parse_expression("(+ 1 2)");
-    p = c.eval(t, &i);
-    REQUIRE( i == 1 );
-    REQUIRE( p.at(0) == "\tld $1, r0" );
-    REQUIRE( p.at(1) == "\tld $2, r1" );
-    REQUIRE( p.at(2) == "\tadd r0, r1" );
-    REQUIRE( p.size() == 3 );
-    c.rc_free_ref(i);
-    delete t;
-
-    t = Parser::parse_expression("(not a)");
-    p = c.eval(t, &i);
-    REQUIRE( p.at(0) == "\tld $a, r0" );
-    REQUIRE( p.at(1) == "\tld (r0), r0" );
-    REQUIRE( p.at(2) == "\tnot r0" );
-    REQUIRE( p.size() == 3 );
-    c.rc_free_ref(i);
-    delete t;
-
-    t = Parser::parse_expression("(add1 a)");
-    p = c.eval(t, &i);
-    REQUIRE( p.at(0) == "\tld $a, r0" );
-    REQUIRE( p.at(1) == "\tld (r0), r0" );
-    REQUIRE( p.at(2) == "\tinc r0" );
-    REQUIRE( p.size() == 3 );
-    c.rc_free_ref(i);
-    delete t;
-}
-
-TEST_CASE( "Compiler::ref/deref", "[compile]") {
-    Compiler c;
-    Token *t = Parser::parse_expression("(& name)");
-    int dest;
-    vector<string> p = c.eval(t, &dest);
-    REQUIRE( p.at(0) == "\tld $name, r0" );
-    REQUIRE( p.size() == 1 );
-    REQUIRE( dest == 0 );
-    c.rc_free_ref(dest);
-    delete t;
-
-    t = Parser::parse_expression("(* 100)");
-    p = c.eval(t, &dest);
-    REQUIRE( p.at(0) == "\tld $100, r0" );
-    REQUIRE( p.at(1) == "\tld (r0), r1" );
-    REQUIRE( p.size() == 2 );
-    REQUIRE( dest == 1 );
-    c.rc_free_ref(dest);
-    REQUIRE( c.all_registers_free() );
-    delete t;
-}*/

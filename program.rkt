@@ -1,13 +1,13 @@
-(set! c (- 0 a))
+(set! c (+ ALIGN (& d0)))
 
-(set! d (add1 d))
+(set! c (* c))
 
 (define a 0)
 
 (define c 0)
 
-(define d 4)
+(define d0 4)
 
-(define d2 5)
+(define d1 5)
 
 (define ALIGN 4)
