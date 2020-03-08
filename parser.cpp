@@ -8,7 +8,7 @@ vector<string> Parser::split_expressions(string program) {
     int last_index = 0;
     if (!check_valid(program)) throw runtime_error("Syntax Error: Paren Mismatch");
 
-    for (int i = 0; i < program.length(); i++) {
+    for (unsigned int i = 0; i < program.length(); i++) {
         if (s.empty() && (program[i] == ' ' || program[i] == '\n')) {
             last_index++;
             continue;
@@ -29,7 +29,7 @@ vector<string> Parser::split_expressions(string program) {
 
 bool Parser::check_valid(string program) {
     stack<enum Paren> s;
-    for (int i = 0; i < program.length(); i++) {
+    for (unsigned int i = 0; i < program.length(); i++) {
         if (program[i] == '(') {
             s.push(OPEN);
         } else if (program[i] == ')') {
@@ -58,7 +58,7 @@ queue<string> Parser::queue_tokens(string program) {
 
     queue<string> tokens_raw;
     int last_index = 1;
-    for (int i = 1; i < program_formatted.length(); i++) {
+    for (unsigned int i = 1; i < program_formatted.length(); i++) {
         if (program_formatted[i] == ' ') {
             string token = program_formatted.substr(last_index, i - last_index);
             boost::algorithm::trim(token);
