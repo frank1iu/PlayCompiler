@@ -1,13 +1,14 @@
-(set! c (+ ALIGN (& d0)))
+(define accumulator 0)
 
-(set! c (* c))
+(define accumulator2 0)
 
-(define a 0)
+(define sum 0)
 
-(define c 0)
-
-(define d0 4)
-
-(define d1 5)
-
-(define ALIGN 4)
+(while (not (= accumulator 6))
+  (begin
+    (set! accumulator2 0)
+    (while (not (= accumulator2 7))
+      (begin
+        (set! sum (add1 sum))
+        (set! accumulator2 (add1 accumulator2))))
+    (set! accumulator (add1 accumulator))))

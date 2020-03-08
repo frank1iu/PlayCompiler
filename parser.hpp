@@ -27,6 +27,9 @@ class Token {
         // returns the value of the IDENTIFIER token
         // ensure this token has type IDENTIFIER before calling
         string getName() const;
+        // if this value is NOT -1 then this is a virtual token
+        // which is actually a register
+        int which_register = -1;
 
         Token(enum Type type, void* data);
         Token(string data);

@@ -33,6 +33,10 @@ class Compiler {
     int expr_addr(Token* program);
     int expr_deref(Token* program);
     int expr_equals(Token* program);
+    int expr_less_than(Token* program);
+    int expr_greater_than(Token* program);
+    int expr_if(Token* program);
+    int expr_while(Token* program);
     int last_label = 0;
     string next_label();
     string rtos(int r) const;
@@ -41,5 +45,7 @@ class Compiler {
         vector<string> b = c;
         a.insert(a.end(), b.begin(), b.end());
     }
+    int _ralloc_return_val = -1;
+    void ralloc_force_return(int r_dest);
     string toString() const;
 };

@@ -168,9 +168,9 @@ TEST_CASE( "Compiler sub", "[compile]") {
     c.compile_program("(- 1 2)");
     REQUIRE(c.asm_code.at(0) == "ld $1, r0\t# 1");
     REQUIRE(c.asm_code.at(1) == "ld $2, r1\t# 2");
-    REQUIRE(c.asm_code.at(2) == "inc r1\t# (add1 2)");
-    REQUIRE(c.asm_code.at(3) == "not r1\t# (not (add1 2))");
-    REQUIRE(c.asm_code.at(4) == "add r0, r1\t# (+ 1 (not (add1 2)))");
+    REQUIRE(c.asm_code.at(2) == "not r1\t# (not 2)");
+    REQUIRE(c.asm_code.at(3) == "inc r1\t# (add1 (not 2))");
+    REQUIRE(c.asm_code.at(4) == "add r0, r1\t# (+ 1 (add1 (not 2)))");
     REQUIRE(c.asm_code.size() == 6);
 }
 /*

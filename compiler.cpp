@@ -16,11 +16,16 @@ void Compiler::compile_program(string program) {
 }
 
 int Compiler::compile_one(Token* program) {
+    if (program -> which_register != -1) {
+        return program -> which_register;
+    }
     if (program -> type == VALUE || program -> children.size() == 0) {
         return load_value(program);
     }
     string op = program -> getName();
-    if (op == "define") {
+    if (op == ";" || op == "COMMENT") {
+        return -1;
+    } else if (op == "define") {
         return expr_define(program);
     } else if (op == "set!") {
         return expr_set(program);
@@ -42,6 +47,14 @@ int Compiler::compile_one(Token* program) {
         return expr_addr(program);
     } else if (op == "=") {
         return expr_equals(program);
+    } else if (op == "<") {
+        return expr_less_than(program);
+    } else if (op == ">") {
+        return expr_greater_than(program);
+    } else if (op == "if") {
+        return expr_if(program);
+    } else if (op == "while") {
+        return expr_while(program);
     } else {
         throw runtime_error("Unrecognized expression in " + program -> toString());
     }
@@ -78,6 +91,50 @@ int Compiler::expr_deref(Token* program) {
     int return_register = compile_one(program -> children.at(0));
     emit("ld (" + rtos(return_register) + "), " + rtos(return_register), program);
     return return_register;
+}
+
+int Compiler::expr_less_than(Token* program) {
+
+}
+
+int Compiler::expr_while(Token* program) {
+    /*
+    (while cond body)
+    */
+    Token* cond_child = program -> children.at(0);
+    Token* body_child = program -> children.at(1);
+    string label_loop_start = next_label();
+    string label_loop_end = next_label();
+    emit(label_loop_start + ":", program);
+    // recalculate cond
+    int cond_result = compile_one(cond_child);
+    emit("not " + rtos(cond_result), program);
+    emit("bgt " + rtos(cond_result) + ", " + label_loop_end, program);
+    rc_free_ref(cond_result);
+    int body_result = compile_one(body_child);
+    rc_free_ref(body_result);
+    emit("br " + label_loop_start, program);
+    emit(label_loop_end + ":", program);
+    return -1;
+}
+
+int Compiler::expr_greater_than(Token* program) {
+
+}
+
+int Compiler::expr_if(Token* program) {
+    int return_register = compile_one(program -> children.at(0));
+    string label_true_ans = next_label();
+    string label_end = next_label();
+    emit("bgt " + rtos(return_register) + ", " + label_true_ans, program);
+    rc_free_ref(return_register);
+    int shared_register = compile_one(program -> children.at(2));
+    emit("br " + label_end, program);
+    emit(label_true_ans + ":", program);
+    ralloc_force_return(shared_register);
+    compile_one(program -> children.at(1));
+    emit(label_end + ":", program);
+    return shared_register;
 }
 
 int Compiler::expr_begin(Token* program) {
@@ -118,9 +175,9 @@ int Compiler::expr_sub(Token* program) {
     parent -> children.push_back(program -> children.at(0));
     Token* child_not = new Token("not");
     Token* child_add1 = new Token("add1");
-    child_add1 -> children.push_back(program -> children.at(1));
-    child_not -> children.push_back(child_add1);
-    parent -> children.push_back(child_not);
+    child_not -> children.push_back(program -> children.at(1));
+    child_add1 -> children.push_back(child_not);
+    parent -> children.push_back(child_add1);
     return compile_one(parent);
 }
 
@@ -151,14 +208,25 @@ int Compiler::expr_equals(Token* program) {
     parent -> children.push_back(program -> children.at(0));
     parent -> children.push_back(program -> children.at(1));
     int difference = compile_one(parent);
-    int temp = rc_ralloc();
-    emit("ld $0x00000001, " + rtos(temp), program);
-    emit("and " + rtos(temp) + ", " + rtos(difference), program);
-    rc_free_ref(temp);
-    return difference;
+    int r_dest = rc_ralloc();
+    string label = next_label();
+    string label2 = next_label();
+    emit("beq " + rtos(difference) + ", " + label, program);
+    emit("ld $0, " + rtos(r_dest), program);
+    emit("br " + label2, program);
+    emit(label + ":", program);
+    emit("ld $1, " + rtos(r_dest), program);
+    emit(label2 + ":", program);
+    rc_free_ref(difference);
+    return r_dest;
 }
 
 int Compiler::rc_ralloc() {
+    if (_ralloc_return_val != -1) {
+        int tmp = _ralloc_return_val;
+        _ralloc_return_val = -1;
+        return tmp;
+    }
     for (unsigned int i = 0; i < registers.size(); i++) {
         if (registers[i] == 0) {
             registers[i]++;
@@ -173,6 +241,9 @@ void Compiler::rc_keep_ref(int r_dest) {
 void Compiler::rc_free_ref(int r_dest) {
     if (registers[r_dest] == 0) throw runtime_error("rc_free_ref: double free");
     registers[r_dest]--;
+}
+void Compiler::ralloc_force_return(int r_dest) {
+    _ralloc_return_val = r_dest;
 }
 
 Compiler::Compiler() {
