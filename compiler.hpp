@@ -32,6 +32,7 @@ class Compiler {
     int expr_begin(Token* program);
     int expr_addr(Token* program);
     int expr_deref(Token* program);
+    int expr_equals(Token* program);
     int last_label = 0;
     string next_label();
     string rtos(int r) const;

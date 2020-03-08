@@ -173,3 +173,9 @@ TEST_CASE( "Compiler sub", "[compile]") {
     REQUIRE(c.asm_code.at(4) == "add r0, r1\t# (+ 1 (not (add1 2)))");
     REQUIRE(c.asm_code.size() == 6);
 }
+/*
+TEST_CASE( "Compiler equals", "[compile]" ) {
+    Compiler c;
+    c.compile_program("(= 1 2)");
+    cout << c.toString() << endl;
+}*/

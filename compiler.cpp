@@ -40,6 +40,8 @@ int Compiler::compile_one(Token* program) {
         return expr_deref(program);
     } else if (op == "&") {
         return expr_addr(program);
+    } else if (op == "=") {
+        return expr_equals(program);
     } else {
         throw runtime_error("Unrecognized expression in " + program -> toString());
     }
@@ -142,6 +144,18 @@ int Compiler::expr_set(Token* program) {
     rc_free_ref(return_register);
     rc_free_ref(temp);
     return -1;
+}
+
+int Compiler::expr_equals(Token* program) {
+    Token* parent = new Token("-");
+    parent -> children.push_back(program -> children.at(0));
+    parent -> children.push_back(program -> children.at(1));
+    int difference = compile_one(parent);
+    int temp = rc_ralloc();
+    emit("ld $0x00000001, " + rtos(temp), program);
+    emit("and " + rtos(temp) + ", " + rtos(difference), program);
+    rc_free_ref(temp);
+    return difference;
 }
 
 int Compiler::rc_ralloc() {
