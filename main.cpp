@@ -29,15 +29,10 @@ string read_program() {
 
 int main() {
     string program = read_program();
-    vector<Token*> exprs = parseMany(program);
     Compiler c;
-    for (Token* t : exprs) {
-        vector<string> v = c.compile_program(t);
-        if (t -> getName() != ";") {
-            cout << "\t\t\t# " << t -> toString() << endl;
-        }
-        print_vector(v);
-    }
+    c.compile_program(program);
+    print_vector(c.asm_code);
+    print_vector(c.asm_data);
     if (!c.all_registers_free())
         cerr << "[Warn] Register leak found" << endl;
 }

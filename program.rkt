@@ -1,5 +1,3 @@
-(set! a (* (+ ALIGN (& d)))) (; a = *(&d + 1))
-
 (set! c (- 0 a))
 
 (set! d (add1 d))
