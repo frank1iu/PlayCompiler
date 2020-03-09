@@ -120,7 +120,6 @@ int Compiler::expr_while(Token* program) {
     string label_loop_end = next_label();
     emit(label_loop_start + ":", program);
     int cond_result = compile_one(cond_child);
-    //emit("not " + rtos(cond_result), program);
     emit("bgt " + rtos(cond_result) + ", " + label_loop_continue, program);
     emit("br " + label_loop_end, program);
     emit(label_loop_continue + ":", program);

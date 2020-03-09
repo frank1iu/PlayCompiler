@@ -86,6 +86,7 @@ Token* Parser::parse(queue<string> & tokens_raw) {
             token -> children.push_back(new Token(top));
         }
     }
+    throw runtime_error("Parser::parse: mismatching parens");
 }
 
 Token::Token(enum Type type, void* data) {

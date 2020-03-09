@@ -2,28 +2,29 @@ all: runTests main
 
 .PHONY: all clean
 
-FLAGS = -g -O0 -Wall
+FLAGS = -std=c++2a -stdlib=libc++ -c -g -O0 -Wall -Wextra -pedantic
+LD_FLAGS = -std=c++2a -stdlib=libc++ -lc++abi -lpthread -lm
 
 parser.o: parser.cpp parser.hpp
-	g++ $(FLAGS) -o parser.o parser.cpp -c
+	clang++ $(FLAGS) -o parser.o parser.cpp
 
 test.o: test.cpp
-	g++ $(FLAGS) -o test.o test.cpp -c
+	clang++ $(FLAGS) -o test.o test.cpp
 
 run-tests.o: run-tests.cpp
-	g++ $(FLAGS) -o run-tests.o run-tests.cpp -c
+	clang++ $(FLAGS) -o run-tests.o run-tests.cpp
 
 compiler.o: compiler.cpp compiler.hpp
-	g++ $(FLAGS) -o compiler.o compiler.cpp -c
+	clang++ $(FLAGS) -o compiler.o compiler.cpp
 
 runTests: test.o parser.o run-tests.o compiler.o
-	g++ $(FLAGS) -o runTests test.o parser.o run-tests.o compiler.o
+	clang++ $(LD_FLAGS) -o runTests test.o parser.o run-tests.o compiler.o
 
 main.o: main.cpp
-	g++ $(FLAGS) -o main.o main.cpp -c
+	clang++ $(FLAGS) -o main.o main.cpp
 
 main: main.o parser.o compiler.o
-	g++ $(FLAGS) -o main main.o parser.o compiler.o
+	clang++ $(LD_FLAGS) -o main main.o parser.o compiler.o
 
 clean:
 	rm *.o runTests main
