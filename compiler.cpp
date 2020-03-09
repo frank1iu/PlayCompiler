@@ -116,11 +116,14 @@ int Compiler::expr_while(Token* program) {
     Token* cond_child = program -> children.at(0);
     Token* body_child = program -> children.at(1);
     string label_loop_start = next_label();
+    string label_loop_continue = next_label();
     string label_loop_end = next_label();
     emit(label_loop_start + ":", program);
     int cond_result = compile_one(cond_child);
-    emit("not " + rtos(cond_result), program);
-    emit("bgt " + rtos(cond_result) + ", " + label_loop_end, program);
+    //emit("not " + rtos(cond_result), program);
+    emit("bgt " + rtos(cond_result) + ", " + label_loop_continue, program);
+    emit("br " + label_loop_end, program);
+    emit(label_loop_continue + ":", program);
     rc_free_ref(cond_result);
     int body_result = compile_one(body_child);
     rc_free_ref(body_result);
@@ -130,7 +133,21 @@ int Compiler::expr_while(Token* program) {
 }
 
 int Compiler::expr_greater_than(Token* program) {
-
+    Token* parent = new Token("-");
+    parent -> children.push_back(program -> children.at(0));
+    parent -> children.push_back(program -> children.at(1));
+    int difference = compile_one(parent);
+    int r_dest = rc_ralloc();
+    string label = next_label();
+    string label2 = next_label();
+    emit("bgt " + rtos(difference) + ", " + label, program);
+    emit("ld $0, " + rtos(r_dest), program);
+    emit("br " + label2, program);
+    emit(label + ":", program);
+    emit("ld $1, " + rtos(r_dest), program);
+    emit(label2 + ":", program);
+    rc_free_ref(difference);
+    return r_dest;
 }
 
 int Compiler::expr_if(Token* program) {

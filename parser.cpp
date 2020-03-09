@@ -94,6 +94,20 @@ Token::Token(enum Type type, void* data) {
 }
 
 Token::Token(string data) {
+    if (data == "#true") {
+        int* d = (int*) malloc(sizeof(int));
+        *d = 1;
+        this -> type = VALUE;
+        this -> data = d;
+        return;
+    }
+    if (data == "#false") {
+        int* d = (int*) malloc(sizeof(int));
+        *d = 0;
+        this -> type = VALUE;
+        this -> data = d;
+        return;
+    }
     try {
         int i = stoi(data);
         int* d = (int*) malloc(sizeof(int));
@@ -107,7 +121,9 @@ Token::Token(string data) {
 }
 
 int Token::getValue() const {
-    if (type != VALUE) throw runtime_error("Type Error: Expected a value, found an identifier");
+    if (type != VALUE) {
+        throw runtime_error("Type Error: Expected a value, found an identifier");
+    }
     return * (int*) data;
 }
 

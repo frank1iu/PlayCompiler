@@ -158,9 +158,9 @@ TEST_CASE( "Compiler add", "[compile]") {
     REQUIRE(c2.asm_code.at(1) == "inc r0\t# (add1 2)");
 
     Compiler c3;
-    c3.compile_program("(add1 #true)");
+    c3.compile_program("(add1 1)");
     REQUIRE(c3.asm_code.at(0) == "ld $1, r0\t# 1");
-    REQUIRE(c3.asm_code.at(1) == "inc r0\t# (add1 #true)");
+    REQUIRE(c3.asm_code.at(1) == "inc r0\t# (add1 1)");
 }
 
 TEST_CASE( "Compiler sub", "[compile]") {
