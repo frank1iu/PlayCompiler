@@ -23,7 +23,7 @@ int Compiler::compile_one(Token* program) {
         return load_value(program);
     }
     string op = program -> getName();
-    if (op == ";" || op == "COMMENT") {
+    if (op == ";") {
         return -1;
     } else if (op == "define") {
         return expr_define(program);
@@ -94,19 +94,30 @@ int Compiler::expr_deref(Token* program) {
 }
 
 int Compiler::expr_less_than(Token* program) {
-
+    Token* parent = new Token("-");
+    parent -> children.push_back(program -> children.at(1));
+    parent -> children.push_back(program -> children.at(0));
+    int difference = compile_one(parent);
+    // difference > 0 -> return true
+    int r_dest = rc_ralloc();
+    string label = next_label();
+    string label2 = next_label();
+    emit("bgt " + rtos(difference) + ", " + label, program);
+    emit("ld $0, " + rtos(r_dest), program);
+    emit("br " + label2, program);
+    emit(label + ":", program);
+    emit("ld $1, " + rtos(r_dest), program);
+    emit(label2 + ":", program);
+    rc_free_ref(difference);
+    return r_dest;
 }
 
 int Compiler::expr_while(Token* program) {
-    /*
-    (while cond body)
-    */
     Token* cond_child = program -> children.at(0);
     Token* body_child = program -> children.at(1);
     string label_loop_start = next_label();
     string label_loop_end = next_label();
     emit(label_loop_start + ":", program);
-    // recalculate cond
     int cond_result = compile_one(cond_child);
     emit("not " + rtos(cond_result), program);
     emit("bgt " + rtos(cond_result) + ", " + label_loop_end, program);
@@ -183,7 +194,7 @@ int Compiler::expr_sub(Token* program) {
 
 int Compiler::expr_define(Token* program) {
     if (program -> children.at(1) -> children.size() != 0) {
-        throw runtime_error("define: defining a constant from an expression is not supported");
+        throw runtime_error("define: defining a static variable is not supported; use set!");
     }
     string name = program -> children.at(0) -> getName();
     int val = program -> children.at(1) -> getValue();
@@ -248,7 +259,7 @@ void Compiler::ralloc_force_return(int r_dest) {
 
 Compiler::Compiler() {
     registers = {0, 0, 0, 0, 0, -1, -1, 0};
-    asm_data.push_back(".pos 0x1000\t# Data Region");
+    asm_data.push_back(".pos 0x4000\t# Data Region");
 };
 
 bool Compiler::all_registers_free() const {
@@ -276,6 +287,7 @@ string Compiler::toString() const {
     for (string s : asm_data) {
         ret += s + "\n";
     }
+    ret += ".pos 0x10000\nstacktop:\n";
     return ret;
 }
 

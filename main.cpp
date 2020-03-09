@@ -31,8 +31,10 @@ int main() {
     string program = read_program();
     Compiler c;
     c.compile_program(program);
+    /*
     print_vector(c.asm_code);
-    print_vector(c.asm_data);
+    print_vector(c.asm_data);*/
+    cout << c.toString();
     if (!c.all_registers_free())
         cerr << "[Warn] Register leak found" << endl;
 }
