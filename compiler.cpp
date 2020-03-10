@@ -27,6 +27,8 @@ int Compiler::compile_one(Token* program) {
         return -1;
     } else if (op == "define") {
         return expr_define(program);
+    } else if (op == "define!") {
+        return expr_define_stack(program);
     } else if (op == "set!") {
         return expr_set(program);
     } else if (op == "+") {
@@ -42,6 +44,8 @@ int Compiler::compile_one(Token* program) {
     } else if (op == "begin") {
         return expr_begin(program);
     } else if (op == "*") {
+        if (program -> children.size() == 2)
+            return expr_mult(program);
         return expr_deref(program);
     } else if (op == "&") {
         return expr_addr(program);
@@ -87,6 +91,24 @@ int Compiler::expr_addr(Token* program) {
     return r;
 }
 
+int Compiler::expr_define_stack(Token* program) {
+    stack_alloc(4);
+    string name = program -> children.at(0) -> getName();
+    int value = program -> children.at(1) -> getValue();
+    struct Symbol s;
+    s.offset = 0;
+    s.name = name;
+    symbol_table.push_back(s);
+    int temp = rc_ralloc();
+    emit("ld $" + to_string(value) + ", " + rtos(temp), program);
+    emit("st " + rtos(temp) + ", (r5)", program);
+    rc_free_ref(temp);
+    for (struct Symbol s: symbol_table) {
+        s.offset += 4;
+    }
+    return -1;
+}
+
 int Compiler::expr_deref(Token* program) {
     int return_register = compile_one(program -> children.at(0));
     emit("ld (" + rtos(return_register) + "), " + rtos(return_register), program);
@@ -110,6 +132,17 @@ int Compiler::expr_less_than(Token* program) {
     emit(label2 + ":", program);
     rc_free_ref(difference);
     return r_dest;
+}
+
+void Compiler::stack_alloc(int size) {
+    Token* t = new Token("[stack allocation]");
+    int temp = rc_ralloc();
+    emit("ld $-" + to_string(size) + ", " + rtos(temp), t);
+    emit("add " + rtos(temp) + ", r5", t);
+    for (Symbol s : symbol_table) {
+        s.offset += size;
+    }
+    rc_free_ref(temp);
 }
 
 int Compiler::expr_while(Token* program) {
@@ -169,6 +202,10 @@ int Compiler::expr_begin(Token* program) {
         compile_one(t);
     }
     return -1;
+}
+
+int Compiler::expr_mult(Token* program) {
+    
 }
 
 int Compiler::expr_add(Token* program) {
@@ -260,13 +297,15 @@ int Compiler::rc_ralloc() {
             return i;
         }
     }
+    cerr << toString() << endl;
     throw runtime_error("rc_ralloc cannot find a free register!");
 }
 void Compiler::rc_keep_ref(int r_dest) {
     registers[r_dest]++;
 }
 void Compiler::rc_free_ref(int r_dest) {
-    if (registers[r_dest] == 0) throw runtime_error("rc_free_ref: double free");
+    if (r_dest == -1) return;
+    if (registers[r_dest] == 0) throw runtime_error("rc_free_ref: double free on r" + to_string(r_dest));
     registers[r_dest]--;
 }
 void Compiler::ralloc_force_return(int r_dest) {
@@ -296,7 +335,7 @@ void Compiler::emit(string code, Token* program) {
 }
 
 string Compiler::toString() const {
-    string ret;
+    string ret = "ld $stacktop, r5\n";
     for (string s : asm_code) {
         ret += s + "\n";
     }

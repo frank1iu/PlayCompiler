@@ -23,6 +23,7 @@ class Compiler {
     int load_value(Token* program);
     int compile_one(Token* program);
     int expr_define(Token* program);
+    int expr_define_stack(Token* program);
     int expr_set(Token* program);
     int expr_not(Token* program);
     int expr_sub(Token* program);
@@ -37,15 +38,18 @@ class Compiler {
     int expr_greater_than(Token* program);
     int expr_if(Token* program);
     int expr_while(Token* program);
+    int expr_mult(Token* program);
+    void stack_alloc(int size);
     int last_label = 0;
     string next_label();
     string rtos(int r) const;
     void emit(string code, Token* program);
-    void concat(vector<string> & a, vector<string> c) {
-        vector<string> b = c;
-        a.insert(a.end(), b.begin(), b.end());
-    }
     int _ralloc_return_val = -1;
     void ralloc_force_return(int r_dest);
     string toString() const;
+    struct Symbol {
+        int offset;
+        string name;
+    };
+    vector<Symbol> symbol_table;
 };

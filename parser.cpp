@@ -123,7 +123,7 @@ Token::Token(string data) {
 
 int Token::getValue() const {
     if (type != VALUE) {
-        throw runtime_error("Type Error: Expected a value, found an identifier");
+        throw runtime_error("Type Error: Expected a value, found an identifier: " + getName());
     }
     return * (int*) data;
 }
