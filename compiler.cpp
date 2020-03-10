@@ -64,6 +64,16 @@ int Compiler::compile_one(Token* program) {
     }
 }
 
+int Compiler::load_value_stack(Token* program) {
+    string name = program -> getName();
+    int offset;
+    for (Symbol s : symbol_table) {
+        if (s.name == name) offset = s.offset;
+    }
+    int r = rc_ralloc();
+    emit("ld " + to_string(offset) + "(r5), " + rtos(r), program);
+    return r;
+}
 int Compiler::load_value(Token* program) {
     int r;
     if (program -> type == VALUE) {
@@ -74,6 +84,9 @@ int Compiler::load_value(Token* program) {
             return load_value(new Token("1"));
         } else if (program -> getName() == "#false") {
             return load_value(new Token("0"));
+        }
+        for (Symbol s: symbol_table) {
+            if (s.name == program -> getName()) return load_value_stack(program);
         }
         r = rc_ralloc();
         emit("ld $" + program -> toString() + ", " + rtos(r), program);
@@ -139,8 +152,8 @@ void Compiler::stack_alloc(int size) {
     int temp = rc_ralloc();
     emit("ld $-" + to_string(size) + ", " + rtos(temp), t);
     emit("add " + rtos(temp) + ", r5", t);
-    for (Symbol s : symbol_table) {
-        s.offset += size;
+    for (int i = 0; i < symbol_table.size(); i++) {
+        symbol_table.at(i).offset += 4;
     }
     rc_free_ref(temp);
 }

@@ -21,6 +21,7 @@ class Compiler {
     Compiler();
     //private:
     int load_value(Token* program);
+    int load_value_stack(Token* program);
     int compile_one(Token* program);
     int expr_define(Token* program);
     int expr_define_stack(Token* program);

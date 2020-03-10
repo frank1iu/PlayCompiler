@@ -35,7 +35,11 @@ int main() {
     print_vector(c.asm_code);
     print_vector(c.asm_data);*/
     cout << c.toString();
-    if (!c.all_registers_free())
+    if (!c.all_registers_free()) {
         cerr << "[Warn] Register leak found" << endl;
+        for (int i = 0; i < c.registers.size(); i++) {
+            cerr << "r" << i << ": " << c.registers[i] << endl;
+        }
+    }
 }
 
