@@ -31,15 +31,15 @@ int main() {
     string program = read_program();
     Compiler c;
     c.compile_program(program);
-    /*
-    print_vector(c.asm_code);
-    print_vector(c.asm_data);*/
     cout << c.toString();
     if (!c.all_registers_free()) {
         cerr << "[Warn] Register leak found" << endl;
-        for (int i = 0; i < c.registers.size(); i++) {
+        for (unsigned int i = 0; i < c.registers.size(); i++) {
             cerr << "r" << i << ": " << c.registers[i] << endl;
         }
+    }
+    for (Compiler::Symbol s: c.symbol_table) {
+        cerr << s.name << " is at offset " << s.offset << endl;
     }
 }
 

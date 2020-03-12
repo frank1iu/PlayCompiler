@@ -40,6 +40,7 @@ class Compiler {
     int expr_if(Token* program);
     int expr_while(Token* program);
     int expr_mult(Token* program);
+    int expr_for(Token* program);
     void stack_alloc(int size);
     int last_label = 0;
     string next_label();
@@ -53,4 +54,6 @@ class Compiler {
         string name;
     };
     vector<Symbol> symbol_table;
+    bool defined(string name);
+    int offset_of(string name);
 };

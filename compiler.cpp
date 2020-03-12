@@ -59,6 +59,8 @@ int Compiler::compile_one(Token* program) {
         return expr_if(program);
     } else if (op == "while") {
         return expr_while(program);
+    } else if (op == "for") {
+        return expr_for(program);
     } else {
         throw runtime_error("Unrecognized expression in " + program -> toString());
     }
@@ -107,15 +109,13 @@ int Compiler::expr_addr(Token* program) {
 int Compiler::expr_define_stack(Token* program) {
     stack_alloc(4);
     string name = program -> children.at(0) -> getName();
-    int value = program -> children.at(1) -> getValue();
+    int return_register = compile_one(program -> children.at(1));
     struct Symbol s;
     s.offset = 0;
     s.name = name;
     symbol_table.push_back(s);
-    int temp = rc_ralloc();
-    emit("ld $" + to_string(value) + ", " + rtos(temp), program);
-    emit("st " + rtos(temp) + ", (r5)", program);
-    rc_free_ref(temp);
+    emit("st " + rtos(return_register) + ", (r5)", program);
+    rc_free_ref(return_register);
     for (struct Symbol s: symbol_table) {
         s.offset += 4;
     }
@@ -152,7 +152,7 @@ void Compiler::stack_alloc(int size) {
     int temp = rc_ralloc();
     emit("ld $-" + to_string(size) + ", " + rtos(temp), t);
     emit("add " + rtos(temp) + ", r5", t);
-    for (int i = 0; i < symbol_table.size(); i++) {
+    for (unsigned int i = 0; i < symbol_table.size(); i++) {
         symbol_table.at(i).offset += 4;
     }
     rc_free_ref(temp);
@@ -260,7 +260,7 @@ int Compiler::expr_sub(Token* program) {
 
 int Compiler::expr_define(Token* program) {
     if (program -> children.at(1) -> children.size() != 0) {
-        throw runtime_error("define: defining a static variable is not supported; use set!");
+        throw runtime_error("define: defining from expression is not supported; use set!");
     }
     string name = program -> children.at(0) -> getName();
     int val = program -> children.at(1) -> getValue();
@@ -269,9 +269,27 @@ int Compiler::expr_define(Token* program) {
     return -1;
 }
 
+int Compiler::expr_for(Token* program) {
+    compile_one(program -> children.at(0));
+    Token* parent = new Token("while");
+    Token* cond = program -> children.at(1);
+    parent -> children.push_back(cond);
+    Token* subroutine = new Token("begin");
+    subroutine -> children.push_back(program -> children.at(3));
+    subroutine -> children.push_back(program -> children.at(2));
+    parent -> children.push_back(subroutine);
+    return compile_one(parent);
+}
+
 int Compiler::expr_set(Token* program) {
     int return_register = compile_one(program -> children.at(1));
     string name = program -> children.at(0) -> getName();
+    if (defined(name)) {
+        int offset = offset_of(name);
+        emit("st " + rtos(return_register) + ", " + to_string(offset) + "(r5)", program);
+        rc_free_ref(return_register);
+        return -1;
+    }
     int temp = rc_ralloc();
     emit("ld $" + name + ", " + rtos(temp), program);
     emit("st " + rtos(return_register) + ", (" + rtos(temp) + ")", program);
@@ -355,10 +373,28 @@ string Compiler::toString() const {
     for (string s : asm_data) {
         ret += s + "\n";
     }
-    ret += ".pos 0x10000\nstacktop:\n";
+    ret += ".pos 0xfe00\nstack:\n";
+    for (int i = 0; i < 512; i++) {
+        ret += ".long 0\n";
+    }
+    ret += ".pos 0x10000\nstacktop:\n.long 0\n";
     return ret;
 }
 
 string Compiler::next_label() {
     return "L" + to_string(last_label++);
+}
+
+bool Compiler::defined(string name) {
+    for (Symbol s : symbol_table) {
+        if (s.name == name) return true;
+    }
+    return false;
+}
+
+int Compiler::offset_of(string name) {
+    for (Symbol s : symbol_table) {
+        if (s.name == name) return s.offset;
+    }
+    throw runtime_error(name + ": this symbol is undefined");
 }
