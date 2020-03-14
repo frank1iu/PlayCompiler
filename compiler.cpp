@@ -70,8 +70,8 @@ int Compiler::compile_one(Token* program) {
 int Compiler::load_value_stack(Token* program) {
     string name = program -> getName();
     int offset;
-    for (Symbol s : symbol_table) {
-        if (s.name == name) offset = s.offset;
+    for (Context *c : contexts) {
+        if (c -> defined(name)) offset = c -> offset_of(name);
     }
     int r = rc_ralloc();
     emit("ld " + to_string(offset) + "(r5), " + rtos(r), program);
@@ -94,8 +94,9 @@ int Compiler::load_value(Token* program) {
             delete tmp;
             return rval;
         }
-        for (Symbol s: symbol_table) {
-            if (s.name == program -> getName()) return load_value_stack(program);
+
+        for (Context *c : contexts) {
+            if (c -> defined(program -> getName())) return load_value_stack(program);
         }
         r = rc_ralloc();
         emit("ld $" + program -> toString() + ", " + rtos(r), program);
@@ -110,15 +111,17 @@ int Compiler::expr_addr(Token* program) {
     }
     int r = rc_ralloc();
     string name = program -> children.at(0) -> getName();
-    if (defined(name)) {
-        emit("mov r5, " + rtos(r), program);
-        int tmp = rc_ralloc();
-        emit("ld $" + to_string(offset_of(name)) + ", " + rtos(tmp), program);
-        emit("add " + rtos(tmp) + ", " + rtos(r), program);
-        rc_free_ref(tmp);
-    } else {
-        emit("ld $" + name + ", " + rtos(r), program);
+    for (Context *c: contexts) {
+        if (c -> defined(name)) {
+            emit("mov r5, " + rtos(r), program);
+            int tmp = rc_ralloc();
+            emit("ld $" + to_string(c -> offset_of(name)) + ", " + rtos(tmp), program);
+            emit("add " + rtos(tmp) + ", " + rtos(r), program);
+            rc_free_ref(tmp);
+            return r;
+        }
     }
+    emit("ld $" + name + ", " + rtos(r), program);
     return r;
 }
 
@@ -129,12 +132,10 @@ int Compiler::expr_define_stack(Token* program) {
     struct Symbol s;
     s.offset = 0;
     s.name = name;
-    symbol_table.push_back(s);
+    Context* c = contexts.back();
+    c -> symbol_table.push_back(s);
     emit("st " + rtos(return_register) + ", (r5)", program);
     rc_free_ref(return_register);
-    for (struct Symbol s: symbol_table) {
-        s.offset += 4;
-    }
     return -1;
 }
 
@@ -171,8 +172,11 @@ void Compiler::stack_alloc(int size, string name) {
     emit("ld $-" + to_string(size) + ", " + rtos(temp), t);
     emit("add " + rtos(temp) + ", r5", t);
     delete t;
-    for (unsigned int i = 0; i < symbol_table.size(); i++) {
-        symbol_table.at(i).offset += 4;
+    for (Symbol & s2: contexts.back() -> symbol_table) {
+        s2.offset += 4;
+    }
+    for (int i = 0; i < contexts.size() - 1; i++) {
+        contexts.at(i) -> offset += 4;
     }
     rc_free_ref(temp);
 }
@@ -308,11 +312,13 @@ int Compiler::expr_for(Token* program) {
 int Compiler::expr_set(Token* program) {
     int return_register = compile_one(program -> children.at(1));
     string name = program -> children.at(0) -> getName();
-    if (defined(name)) {
-        int offset = offset_of(name);
-        emit("st " + rtos(return_register) + ", " + to_string(offset) + "(r5)", program);
-        rc_free_ref(return_register);
-        return -1;
+    for (Context *c: contexts) {
+        if (c -> defined(name)) {
+            int offset = c -> offset_of(name);
+            emit("st " + rtos(return_register) + ", " + to_string(offset) + "(r5)", program);
+            rc_free_ref(return_register);
+            return -1;
+        }
     }
     int temp = rc_ralloc();
     emit("ld $" + name + ", " + rtos(temp), program);
@@ -371,7 +377,8 @@ void Compiler::ralloc_force_return(int r_dest) {
 Compiler::Compiler() {
     registers = {0, 0, 0, 0, 0, -1, -1, 0};
     asm_data.push_back(".pos 0x4000\t# Data Region");
-};
+    contexts.push_back(new Context());
+}
 
 bool Compiler::all_registers_free() const {
     for (unsigned int i = 0; i < registers.size(); i++) {
@@ -410,16 +417,16 @@ string Compiler::next_label() {
     return "L" + to_string(last_label++);
 }
 
-bool Compiler::defined(string name) const {
+bool Context::defined(string name) const {
     for (Symbol s : symbol_table) {
         if (s.name == name) return true;
     }
     return false;
 }
 
-int Compiler::offset_of(string name) const {
+int Context::offset_of(string name) const {
     for (Symbol s : symbol_table) {
-        if (s.name == name) return s.offset;
+        if (s.name == name) return s.offset + offset;
     }
     throw runtime_error(name + ": this symbol is undefined");
 }

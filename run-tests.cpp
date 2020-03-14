@@ -173,13 +173,3 @@ TEST_CASE( "Compiler sub", "[compile]") {
     REQUIRE(c.asm_code.at(4) == "add r0, r1\t# (+ 1 (add1 (not 2)))");
     REQUIRE(c.asm_code.size() == 6);
 }
-
-TEST_CASE( "Compiler symbol table", "[compile]") {
-    Compiler c;
-    Compiler::Symbol s;
-    s.offset = 1;
-    c.symbol_table.push_back(s);
-    REQUIRE(c.symbol_table.at(0).offset == 1);
-    c.symbol_table.at(0).offset = 0;
-    REQUIRE(c.symbol_table.at(0).offset == 0);
-}

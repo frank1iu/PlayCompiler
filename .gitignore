@@ -35,3 +35,5 @@ main
 runTests
 *.s
 *.rkt
+
+.vscode
