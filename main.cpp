@@ -32,10 +32,8 @@ int main() {
             }
         }
         cerr << "Stack information at time of exit:" << endl;
-        for (Context *context: c.contexts) {
-            for (Symbol s : context -> symbol_table) {
-                cerr << "offset " << s.offset << ": " << s.name << endl;
-            }
+        for (Compiler::Symbol s: c.symbol_table) {
+            cerr << "offset " << s.offset << ": " << s.name << endl;
         }
     }
 }

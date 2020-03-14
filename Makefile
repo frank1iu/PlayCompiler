@@ -21,7 +21,7 @@ compiler.o: compiler.cpp compiler.hpp
 
 runTests: test.o parser.o run-tests.o compiler.o
 	$(CXX) $(LD_FLAGS) -o runTests test.o parser.o run-tests.o compiler.o
-	#./runTests
+	./runTests
 
 main.o: main.cpp
 	$(CXX) $(FLAGS) -o main.o main.cpp

@@ -5,19 +5,6 @@
 
 using namespace std;
 
-struct Symbol {
-    int offset;
-    string name;
-};
-
-class Context {
-    public:
-    vector<Symbol> symbol_table;
-    int offset;
-    bool defined(string name) const;
-    int offset_of(string name) const;
-};
-
 class Compiler {
     public:
     // reference counts of each register
@@ -62,5 +49,11 @@ class Compiler {
     int _ralloc_return_val = -1;
     void ralloc_force_return(int r_dest);
     string toString() const;
-    vector<Context*> contexts;
+    struct Symbol {
+        int offset;
+        string name;
+    };
+    vector<Symbol> symbol_table;
+    bool defined(string name) const;
+    int offset_of(string name) const;
 };
