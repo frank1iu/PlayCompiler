@@ -149,7 +149,6 @@ int Compiler::expr_less_than(Token* program) {
     parent -> children.push_back(program -> children.at(1));
     parent -> children.push_back(program -> children.at(0));
     int difference = compile_one(parent);
-    delete parent;
     // difference > 0 -> return true
     int r_dest = rc_ralloc();
     string label = next_label();
@@ -161,6 +160,8 @@ int Compiler::expr_less_than(Token* program) {
     emit("ld $1, " + rtos(r_dest), program);
     emit(label2 + ":", program);
     rc_free_ref(difference);
+    parent -> children.clear();
+    delete parent;
     return r_dest;
 }
 
@@ -200,6 +201,7 @@ int Compiler::expr_greater_than(Token* program) {
     parent -> children.push_back(program -> children.at(0));
     parent -> children.push_back(program -> children.at(1));
     int difference = compile_one(parent);
+    parent -> children.clear();
     delete parent;
     int r_dest = rc_ralloc();
     string label = next_label();
@@ -275,7 +277,6 @@ int Compiler::expr_sub(Token* program) {
     child_add1 -> children.push_back(child_not);
     parent -> children.push_back(child_add1);
     int rval = compile_one(parent);
-    delete parent;
     return rval;
 }
 
@@ -300,7 +301,7 @@ int Compiler::expr_for(Token* program) {
     subroutine -> children.push_back(program -> children.at(2));
     parent -> children.push_back(subroutine);
     int rval = compile_one(parent);
-    delete parent;
+    // delete parent;
     return rval;
 }
 
@@ -326,7 +327,7 @@ int Compiler::expr_equals(Token* program) {
     parent -> children.push_back(program -> children.at(0));
     parent -> children.push_back(program -> children.at(1));
     int difference = compile_one(parent);
-    delete parent;
+    // delete parent;
     int r_dest = rc_ralloc();
     string label = next_label();
     string label2 = next_label();

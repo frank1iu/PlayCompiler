@@ -17,8 +17,13 @@ string read_program() {
 int main() {
     string program = read_program();
     Compiler c;
-    c.compile_program(program);
-    cout << c.toString();
+    try {
+        c.compile_program(program);
+        cout << c.toString();
+    } catch (runtime_error error) {
+        cerr << error.what() << endl;
+        cerr << c.toString();
+    }
     if (DEBUG) {
         if (!c.all_registers_free()) {
             cerr << "[Warn] Register leak found" << endl;
