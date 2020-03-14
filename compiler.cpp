@@ -11,6 +11,7 @@ void Compiler::compile_program(string program) {
         string expr_raw = exprs.at(i);
         Token* expr = Parser::parse_expression(expr_raw);
         compile_one(expr);
+        delete expr;
     }
     asm_code.push_back("halt");
 }
@@ -83,9 +84,15 @@ int Compiler::load_value(Token* program) {
         emit("ld $" + program -> toString() + ", " + rtos(r), program);
     } else {
         if (program -> getName() == "#true") {
-            return load_value(new Token("1"));
+            Token* tmp = new Token("1");
+            int rval =  load_value(tmp);
+            delete tmp;
+            return rval;
         } else if (program -> getName() == "#false") {
-            return load_value(new Token("0"));
+            Token* tmp = new Token("0");
+            int rval =  load_value(tmp);
+            delete tmp;
+            return rval;
         }
         for (Symbol s: symbol_table) {
             if (s.name == program -> getName()) return load_value_stack(program);
@@ -99,16 +106,25 @@ int Compiler::load_value(Token* program) {
 
 int Compiler::expr_addr(Token* program) {
     if (program -> children.at(0) -> children.size() != 0) {
-        throw runtime_error("Getting address of a non-static variable is not supported");
+        throw runtime_error("Getting address of an expression is not supported");
     }
     int r = rc_ralloc();
-    emit("ld $" + program -> children.at(0) -> getName() + ", " + rtos(r), program);
+    string name = program -> children.at(0) -> getName();
+    if (defined(name)) {
+        emit("mov r5, " + rtos(r), program);
+        int tmp = rc_ralloc();
+        emit("ld $" + to_string(offset_of(name)) + ", " + rtos(tmp), program);
+        emit("add " + rtos(tmp) + ", " + rtos(r), program);
+        rc_free_ref(tmp);
+    } else {
+        emit("ld $" + name + ", " + rtos(r), program);
+    }
     return r;
 }
 
 int Compiler::expr_define_stack(Token* program) {
-    stack_alloc(4);
     string name = program -> children.at(0) -> getName();
+    stack_alloc(4, name);
     int return_register = compile_one(program -> children.at(1));
     struct Symbol s;
     s.offset = 0;
@@ -133,6 +149,7 @@ int Compiler::expr_less_than(Token* program) {
     parent -> children.push_back(program -> children.at(1));
     parent -> children.push_back(program -> children.at(0));
     int difference = compile_one(parent);
+    delete parent;
     // difference > 0 -> return true
     int r_dest = rc_ralloc();
     string label = next_label();
@@ -147,11 +164,12 @@ int Compiler::expr_less_than(Token* program) {
     return r_dest;
 }
 
-void Compiler::stack_alloc(int size) {
-    Token* t = new Token("[stack allocation]");
+void Compiler::stack_alloc(int size, string name) {
+    Token* t = new Token("[stack allocation for " + name + "]");
     int temp = rc_ralloc();
     emit("ld $-" + to_string(size) + ", " + rtos(temp), t);
     emit("add " + rtos(temp) + ", r5", t);
+    delete t;
     for (unsigned int i = 0; i < symbol_table.size(); i++) {
         symbol_table.at(i).offset += 4;
     }
@@ -182,6 +200,7 @@ int Compiler::expr_greater_than(Token* program) {
     parent -> children.push_back(program -> children.at(0));
     parent -> children.push_back(program -> children.at(1));
     int difference = compile_one(parent);
+    delete parent;
     int r_dest = rc_ralloc();
     string label = next_label();
     string label2 = next_label();
@@ -255,7 +274,9 @@ int Compiler::expr_sub(Token* program) {
     child_not -> children.push_back(program -> children.at(1));
     child_add1 -> children.push_back(child_not);
     parent -> children.push_back(child_add1);
-    return compile_one(parent);
+    int rval = compile_one(parent);
+    delete parent;
+    return rval;
 }
 
 int Compiler::expr_define(Token* program) {
@@ -278,7 +299,9 @@ int Compiler::expr_for(Token* program) {
     subroutine -> children.push_back(program -> children.at(3));
     subroutine -> children.push_back(program -> children.at(2));
     parent -> children.push_back(subroutine);
-    return compile_one(parent);
+    int rval = compile_one(parent);
+    delete parent;
+    return rval;
 }
 
 int Compiler::expr_set(Token* program) {
@@ -303,6 +326,7 @@ int Compiler::expr_equals(Token* program) {
     parent -> children.push_back(program -> children.at(0));
     parent -> children.push_back(program -> children.at(1));
     int difference = compile_one(parent);
+    delete parent;
     int r_dest = rc_ralloc();
     string label = next_label();
     string label2 = next_label();
@@ -385,14 +409,14 @@ string Compiler::next_label() {
     return "L" + to_string(last_label++);
 }
 
-bool Compiler::defined(string name) {
+bool Compiler::defined(string name) const {
     for (Symbol s : symbol_table) {
         if (s.name == name) return true;
     }
     return false;
 }
 
-int Compiler::offset_of(string name) {
+int Compiler::offset_of(string name) const {
     for (Symbol s : symbol_table) {
         if (s.name == name) return s.offset;
     }

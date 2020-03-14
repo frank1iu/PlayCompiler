@@ -96,14 +96,14 @@ Token::Token(enum Type type, void* data) {
 
 Token::Token(string data) {
     if (data == "#true") {
-        int* d = (int*) malloc(sizeof(int));
+        int* d = new int;
         *d = 1;
         this -> type = VALUE;
         this -> data = d;
         return;
     }
     if (data == "#false") {
-        int* d = (int*) malloc(sizeof(int));
+        int* d = new int;
         *d = 0;
         this -> type = VALUE;
         this -> data = d;
@@ -111,7 +111,7 @@ Token::Token(string data) {
     }
     try {
         int i = stoi(data);
-        int* d = (int*) malloc(sizeof(int));
+        int* d = new int;
         *d = i;
         this -> type = VALUE;
         this -> data = d;

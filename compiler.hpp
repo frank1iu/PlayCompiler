@@ -12,14 +12,14 @@ class Compiler {
     vector<string> asm_code;
     vector<string> asm_data;
     void compile_program(string program);
+    bool all_registers_free() const;
+    Compiler();
+    //private:
     // allocates or frees registers with reference counting
     // throws std::runtime_error if all registers are in use
     int rc_ralloc();
     void rc_keep_ref(int r_dest);
     void rc_free_ref(int r_dest);
-    bool all_registers_free() const;
-    Compiler();
-    //private:
     int load_value(Token* program);
     int load_value_stack(Token* program);
     int compile_one(Token* program);
@@ -41,7 +41,7 @@ class Compiler {
     int expr_while(Token* program);
     int expr_mult(Token* program);
     int expr_for(Token* program);
-    void stack_alloc(int size);
+    void stack_alloc(int size, string name);
     int last_label = 0;
     string next_label();
     string rtos(int r) const;
@@ -54,6 +54,6 @@ class Compiler {
         string name;
     };
     vector<Symbol> symbol_table;
-    bool defined(string name);
-    int offset_of(string name);
+    bool defined(string name) const;
+    int offset_of(string name) const;
 };

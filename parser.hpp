@@ -34,6 +34,9 @@ class Token {
         Token(enum Type type, void* data);
         Token(string data);
         ~Token();
+    private:
+        string str_val;
+        int int_val;
 };
 
 class Parser {
