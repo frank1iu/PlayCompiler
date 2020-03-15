@@ -168,16 +168,6 @@ TEST_CASE( "Compiler sub", "[compile]") {
     REQUIRE(c.asm_code.size() == 6);
 }
 
-TEST_CASE( "Compiler symbol table", "[compile]") {
-    Compiler c;
-    Compiler::Symbol s;
-    s.offset = 1;
-    c.symbol_table.push_back(s);
-    REQUIRE(c.symbol_table.at(0).offset == 1);
-    c.symbol_table.at(0).offset = 0;
-    REQUIRE(c.symbol_table.at(0).offset == 0);
-}
-
 #define ALIGN 4
 TEST_CASE( "RuntimeStack", "[stack]") {
     RuntimeStack rs;

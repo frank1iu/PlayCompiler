@@ -69,10 +69,7 @@ int Compiler::compile_one(Token* program) {
 
 int Compiler::load_value_stack(Token* program) {
     string name = program -> getName();
-    int offset;
-    for (Symbol s : symbol_table) {
-        if (s.name == name) offset = s.offset;
-    }
+    int offset = stack.offset_of(name);
     int r = rc_ralloc();
     emit("ld " + to_string(offset) + "(r5), " + rtos(r), program);
     return r;
@@ -94,8 +91,8 @@ int Compiler::load_value(Token* program) {
             delete tmp;
             return rval;
         }
-        for (Symbol s: symbol_table) {
-            if (s.name == program -> getName()) return load_value_stack(program);
+        if (stack.defined_anywhere(program -> getName())) {
+            return load_value_stack(program);
         }
         r = rc_ralloc();
         emit("ld $" + program -> toString() + ", " + rtos(r), program);
@@ -110,10 +107,10 @@ int Compiler::expr_addr(Token* program) {
     }
     int r = rc_ralloc();
     string name = program -> children.at(0) -> getName();
-    if (defined(name)) {
+    if (stack.defined_anywhere(name)) {
         emit("mov r5, " + rtos(r), program);
         int tmp = rc_ralloc();
-        emit("ld $" + to_string(offset_of(name)) + ", " + rtos(tmp), program);
+        emit("ld $" + to_string(stack.offset_of(name)) + ", " + rtos(tmp), program);
         emit("add " + rtos(tmp) + ", " + rtos(r), program);
         rc_free_ref(tmp);
     } else {
@@ -124,17 +121,10 @@ int Compiler::expr_addr(Token* program) {
 
 int Compiler::expr_define_stack(Token* program) {
     string name = program -> children.at(0) -> getName();
-    stack_alloc(4, name);
+    stack_define(name, 4);
     int return_register = compile_one(program -> children.at(1));
-    struct Symbol s;
-    s.offset = 0;
-    s.name = name;
-    symbol_table.push_back(s);
     emit("st " + rtos(return_register) + ", (r5)", program);
     rc_free_ref(return_register);
-    for (struct Symbol s: symbol_table) {
-        s.offset += 4;
-    }
     return -1;
 }
 
@@ -165,15 +155,18 @@ int Compiler::expr_less_than(Token* program) {
     return r_dest;
 }
 
-void Compiler::stack_alloc(int size, string name) {
-    Token* t = new Token("[stack allocation for " + name + "]");
+void Compiler::stack_define(string name, int size) {
     int temp = rc_ralloc();
-    emit("ld $-" + to_string(size) + ", " + rtos(temp), t);
-    emit("add " + rtos(temp) + ", r5", t);
-    delete t;
-    for (unsigned int i = 0; i < symbol_table.size(); i++) {
-        symbol_table.at(i).offset += 4;
-    }
+    emit("ld $-" + to_string(size) + ", " + rtos(temp), "[stack allocation for " + name + "]");
+    emit("add " + rtos(temp) + ", r5", "[stack allocation for " + name + "]");
+    rc_free_ref(temp);
+    stack.push(name, size);
+}
+
+void Compiler::stack_shrink(int size) {
+    int temp = rc_ralloc();
+    emit("ld $" + to_string(size) + ", " + rtos(temp), "[stack shrink due to frame destruction]");
+    emit("add " + rtos(temp) + ", r5", "[stack shrink due to frame destruction]");
     rc_free_ref(temp);
 }
 
@@ -232,9 +225,18 @@ int Compiler::expr_if(Token* program) {
 }
 
 int Compiler::expr_begin(Token* program) {
+    stack.new_frame();
+    emit("# Frame created. ID: " + to_string(stack.top() -> id), "");
     for (Token* t : program -> children) {
         compile_one(t);
     }
+    emit("# Frame info at time of destruction: ", "");
+    emit("# ID: " + to_string(stack.top() -> id), "");
+    for (Symbol s : stack.top() -> symbols) {
+        emit("# Offset " + to_string(s.offset) + ": " + s.name , "");
+    }
+    stack_shrink(stack.top() -> size);
+    stack.destroy_frame();
     return -1;
 }
 
@@ -308,8 +310,8 @@ int Compiler::expr_for(Token* program) {
 int Compiler::expr_set(Token* program) {
     int return_register = compile_one(program -> children.at(1));
     string name = program -> children.at(0) -> getName();
-    if (defined(name)) {
-        int offset = offset_of(name);
+    if (stack.defined_anywhere(name)) {
+        int offset = stack.offset_of(name);
         emit("st " + rtos(return_register) + ", " + to_string(offset) + "(r5)", program);
         rc_free_ref(return_register);
         return -1;
@@ -390,6 +392,10 @@ void Compiler::emit(string code, Token* program) {
     asm_code.push_back(code + "\t# " + program -> toString());
 }
 
+void Compiler::emit(string code, string debug) {
+    asm_code.push_back(code + "\t# " + debug);
+}
+
 string Compiler::toString() const {
     string ret = "ld $stacktop, r5\n";
     for (string s : asm_code) {
@@ -408,18 +414,4 @@ string Compiler::toString() const {
 
 string Compiler::next_label() {
     return "L" + to_string(last_label++);
-}
-
-bool Compiler::defined(string name) const {
-    for (Symbol s : symbol_table) {
-        if (s.name == name) return true;
-    }
-    return false;
-}
-
-int Compiler::offset_of(string name) const {
-    for (Symbol s : symbol_table) {
-        if (s.name == name) return s.offset;
-    }
-    throw runtime_error(name + ": this symbol is undefined");
 }

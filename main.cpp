@@ -31,10 +31,11 @@ int main() {
                 cerr << "r" << i << "'s refcount is: " << c.registers[i] << endl;
             }
         }
+        /*
         cerr << "Stack information at time of exit:" << endl;
         for (Compiler::Symbol s: c.symbol_table) {
             cerr << "offset " << s.offset << ": " << s.name << endl;
-        }
+        }*/
     }
 }
 

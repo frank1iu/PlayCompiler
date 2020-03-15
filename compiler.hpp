@@ -1,5 +1,6 @@
 #pragma once
 #include "parser.hpp"
+#include "runtime.hpp"
 #include <string>
 #include <array>
 
@@ -41,19 +42,15 @@ class Compiler {
     int expr_while(Token* program);
     int expr_mult(Token* program);
     int expr_for(Token* program);
-    void stack_alloc(int size, string name);
+    void stack_define(string name, int size);
+    void stack_shrink(int size);
     int last_label = 0;
     string next_label();
     string rtos(int r) const;
     void emit(string code, Token* program);
+    void emit(string code, string debug);
     int _ralloc_return_val = -1;
     void ralloc_force_return(int r_dest);
     string toString() const;
-    struct Symbol {
-        int offset;
-        string name;
-    };
-    vector<Symbol> symbol_table;
-    bool defined(string name) const;
-    int offset_of(string name) const;
+    RuntimeStack stack;
 };

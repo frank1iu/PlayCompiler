@@ -2,12 +2,15 @@
 #include <string>
 
 RuntimeStack::RuntimeStack() {
-    Context* default_context = new Context();
-    contexts.push_back(default_context);
+    Context* c = new Context();
+    c -> id = __context_last_id++;
+    contexts.push_back(c);
 }
 
 void RuntimeStack::new_frame() {
-    contexts.push_back(new Context());
+    Context* c = new Context();
+    c -> id = __context_last_id++;
+    contexts.push_back(c);
 }
 
 void RuntimeStack::destroy_frame() {
@@ -39,11 +42,10 @@ Context* RuntimeStack::top() {
 }
 
 int RuntimeStack::offset_of(string name) const {
-    if (!defined_anywhere(name)) throw runtime_error(name + ": this symbol is undefined");
     for (Context* c : contexts) {
         if (c -> defined(name)) return c -> find(name).offset + c -> offset;
     }
-    throw runtime_error("RuntimeStack::offset_of: ???");
+    throw runtime_error(name + ": this symbol is undefined");
 }
 
 bool RuntimeStack::defined_anywhere(string name) const {
@@ -61,8 +63,8 @@ bool Context::defined(string name) const {
 }
 
 Symbol Context::find(string name) const {
-    if (!defined(name)) throw runtime_error(name + ": this symbol is undefined");
     for (Symbol s : symbols) {
         if (s.name == name) return s;
     }
+    throw runtime_error(name + ": this symbol is undefined");
 }

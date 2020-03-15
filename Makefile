@@ -4,7 +4,7 @@ all: runTests main
 
 CXX = clang++
 
-FLAGS = -std=c++2a -stdlib=libc++ -c -g -O0 -Wall -Wextra -pedantic
+FLAGS = -std=c++2a -stdlib=libc++ -c -g -O0 -Wall -Wextra -pedantic -Wno-c99-extensions
 LD_FLAGS = -std=c++2a -stdlib=libc++ -lc++abi -lpthread -lm
 
 parser.o: parser.cpp parser.hpp

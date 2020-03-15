@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 #include <vector>
 #include <set>
@@ -9,6 +10,8 @@ struct Symbol {
     int offset;
     bool is_return_address;
 };
+
+static int __context_last_id = 0;
 
 class Context {
     public:
