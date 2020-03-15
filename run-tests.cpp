@@ -1,6 +1,7 @@
 #include "catch.hpp"
 #include "parser.hpp"
 #include "compiler.hpp"
+#include "runtime.hpp"
 #include <iostream>
 
 TEST_CASE( "Parser::check_valid", "[parse]" ) {
@@ -114,13 +115,6 @@ TEST_CASE( "Compiler ralloc reference counting", "[compile]" ) {
     int third = c.rc_ralloc();
     REQUIRE( third == 0 );
 }
-/*
-
-TEST_CASE( "Compiler ", "[compile]") {
-
-}
-
-*/
 
 TEST_CASE( "Compiler define", "[compile]") {
     Compiler c;
@@ -182,4 +176,22 @@ TEST_CASE( "Compiler symbol table", "[compile]") {
     REQUIRE(c.symbol_table.at(0).offset == 1);
     c.symbol_table.at(0).offset = 0;
     REQUIRE(c.symbol_table.at(0).offset == 0);
+}
+
+#define ALIGN 4
+TEST_CASE( "RuntimeStack", "[stack]") {
+    RuntimeStack rs;
+    rs.push("test", ALIGN);
+    REQUIRE(rs.offset_of("test") == 0);
+    rs.push("test2", ALIGN);
+    REQUIRE(rs.offset_of("test") == 4);
+    REQUIRE(rs.offset_of("test2") == 0);
+    rs.new_frame();
+    rs.push("test3", ALIGN);
+    REQUIRE(rs.offset_of("test") == 8);
+    REQUIRE(rs.offset_of("test2") == 4);
+    REQUIRE(rs.offset_of("test3") == 0);
+    rs.destroy_frame();
+    REQUIRE(rs.offset_of("test") == 4);
+    REQUIRE(rs.offset_of("test2") == 0);
 }

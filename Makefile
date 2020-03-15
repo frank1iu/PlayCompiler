@@ -19,15 +19,18 @@ run-tests.o: run-tests.cpp
 compiler.o: compiler.cpp compiler.hpp
 	$(CXX) $(FLAGS) -o compiler.o compiler.cpp
 
-runTests: test.o parser.o run-tests.o compiler.o
-	$(CXX) $(LD_FLAGS) -o runTests test.o parser.o run-tests.o compiler.o
-	./runTests
+runtime.o: runtime.cpp runtime.hpp
+	$(CXX) $(FLAGS) -o runtime.o runtime.cpp
+
+runTests: test.o parser.o run-tests.o compiler.o runtime.o
+	$(CXX) $(LD_FLAGS) -o runTests runtime.o test.o parser.o run-tests.o compiler.o
+	#./runTests
 
 main.o: main.cpp
 	$(CXX) $(FLAGS) -o main.o main.cpp
 
-main: main.o parser.o compiler.o
-	$(CXX) $(LD_FLAGS) -o main main.o parser.o compiler.o
+main: main.o parser.o compiler.o runtime.o
+	$(CXX) $(LD_FLAGS) -o main runtime.o main.o parser.o compiler.o
 
 clean:
 	rm *.o runTests main
