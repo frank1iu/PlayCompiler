@@ -1,7 +1,13 @@
 # PlayCompiler: Racket to SM213 Assembly
 
-### Usage
+## Usage
 
 ```sh
-cat <program>.rkt | ./main
+./main < program.rkt
+```
+
+### To include the standard library:
+
+```sh
+cat stdlib.rkt program.rkt | ./main
 ```

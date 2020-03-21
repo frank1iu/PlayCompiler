@@ -36,4 +36,6 @@ runTests
 *.s
 *.rkt
 
+!stdlib.rkt
+
 .vscode
