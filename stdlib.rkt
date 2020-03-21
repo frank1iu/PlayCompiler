@@ -63,7 +63,6 @@
 (void (call expect (call factorial 5) 120))
 
 (define __COMPILER_ALIGN 4)
-(; define __COMPILER_HEAP_BP 65024) (; 0xfe00)
 (define __COMPILER_HEAP_BP 65540)
 (define (malloc size)
     (begin
@@ -94,10 +93,5 @@
         (begin
             (write! (+ (call mult index __COMPILER_ALIGN) base) val))))
 
-(; void (begin 
-    (define! original_base __COMPILER_HEAP_BP)
-    (set! __COMPILER_DEBUG_VAL0 __COMPILER_HEAP_BP)
-    (define! arr_test (call array_new 5))
-    (call array_set arr_test 2 3)
-    (call expect (call array_at arr_test 2) 3))
-    (set! __COMPILER_HEAP_BP original_base))
+(define (array_empty base)
+    (= (call array_length base) 0))

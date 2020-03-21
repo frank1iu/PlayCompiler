@@ -172,8 +172,8 @@ void Compiler::stack_define(string name, int size) {
 
 void Compiler::stack_shrink(int size) {
     int temp = rc_ralloc();
-    emit("ld $" + to_string(size) + ", " + rtos(temp), "[stack shrink due to frame destruction]");
-    emit("add " + rtos(temp) + ", r5", "[stack shrink due to frame destruction]");
+    emit("ld $" + to_string(size) + ", " + rtos(temp), "[stack shrink]");
+    emit("add " + rtos(temp) + ", r5", "[stack shrink]");
     rc_free_ref(temp);
 }
 
@@ -324,7 +324,6 @@ int Compiler::expr_define_fn(Token* program) {
         args.push_back(t -> getName());
         c.stack.push(t -> getName(), ALIGN);
     }
-    c.registers = registers;
     ft.define(name, args);
     c.ft = ft;
     c.compile_one(parent);
@@ -333,11 +332,11 @@ int Compiler::expr_define_fn(Token* program) {
     asm_fn.push_back(name + ": ");
     asm_fn.insert(asm_fn.end(), c.asm_code.begin(), c.asm_code.end());
     if (r_loc != -1) {
-        asm_fn.push_back("mov " + rtos(r_loc) + ", r7");
+        asm_fn.push_back("mov " + rtos(r_loc) + ", r7 # [copying return value to r7 for " + name + "]");
     }
     int offset = c.stack.offset_of("__COMPILER_RETURN_ADDRESS");
-    asm_fn.push_back("ld " + to_string(offset) + "(r5), r6");
-    asm_fn.push_back("j (r6)");
+    asm_fn.push_back("ld " + to_string(offset) + "(r5), r6 # [load return address for " + name + "]");
+    asm_fn.push_back("j (r6) # [function return for " + name + "]");
     return -1;
 }
 
@@ -349,6 +348,7 @@ int Compiler::expr_call(Token* program) {
     if (func -> argc != program -> children.size() - 1)
         throw runtime_error(name + ": expects " + to_string(func -> argc) + " arguments, but given " + to_string(program -> children.size() - 1));
     stack.new_frame();
+    emit("nop", "[begin function call: " + name + "]");
     for (int i = 1; i < program -> children.size(); i++) {
         Token* parent = new Token("define!");
         string arg_name = func -> args.at(i - 1);

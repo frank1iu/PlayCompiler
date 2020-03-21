@@ -15,7 +15,7 @@ void RuntimeStack::new_frame() {
 
 void RuntimeStack::destroy_frame() {
     if (contexts.size() == 1) {
-        throw runtime_error("Attempting to destroy frame but only 1 frame exist");
+        throw runtime_error("Attempting to destroy last frame!");
     }
     int top_size = top() -> size;
     contexts.pop_back();
