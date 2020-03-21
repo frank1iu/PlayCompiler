@@ -148,6 +148,9 @@ string Token::toString() const {
     if (type == VALUE) {
         return to_string(getValue());
     }
+    if (which_register != -1) {
+        return "[r" + to_string(which_register) + "]";
+    }
     if (children.size() == 0) {
         return getName();
     }

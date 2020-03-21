@@ -29,6 +29,7 @@ class Compiler {
     int expr_define_stack(Token* program);
     int expr_define_fn(Token* program);
     int expr_set(Token* program);
+    int expr_write(Token* program);
     int expr_call(Token* program);
     int expr_not(Token* program);
     int expr_sub(Token* program);

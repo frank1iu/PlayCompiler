@@ -34,6 +34,8 @@ int Compiler::compile_one(Token* program) {
         return expr_define_stack(program);
     } else if (op == "set!") {
         return expr_set(program);
+    } else if (op == "write!") {
+        return expr_write(program);
     } else if (op == "+") {
         return expr_add(program);
     } else if (op == "add1") {
@@ -303,20 +305,33 @@ int Compiler::expr_define(Token* program) {
 }
 
 int Compiler::expr_define_fn(Token* program) {
-    Compiler c;
     string name = program -> children.at(0) -> getName();
+
+    Token* r6 = new Token("");
+    r6 -> which_register = 6;
+    Token* parent = new Token("define!");
+    Token* ra_name = new Token("__COMPILER_RETURN_ADDRESS");
+    parent -> children.push_back(ra_name);
+    parent -> children.push_back(r6);
+
+    Compiler c;
     vector<string> args;
     for (Token* t : program -> children.at(0) -> children) {
         args.push_back(t -> getName());
         c.stack.push(t -> getName(), ALIGN);
     }
     ft.define(name, args);
+    c.ft = ft;
+    c.compile_one(parent);
+    delete parent;
     int r_loc = c.compile_one(program -> children.at(1));
     asm_fn.push_back(name + ": ");
     asm_fn.insert(asm_fn.end(), c.asm_code.begin(), c.asm_code.end());
     if (r_loc != -1) {
         asm_fn.push_back("mov " + rtos(r_loc) + ", r7");
     }
+    int offset = c.stack.offset_of("__COMPILER_RETURN_ADDRESS");
+    asm_fn.push_back("ld " + to_string(offset) + "(r5), r6");
     asm_fn.push_back("j (r6)");
     return -1;
 }
@@ -342,6 +357,8 @@ int Compiler::expr_call(Token* program) {
     emit("j " + program -> children.at(0) -> getName(), program);
     int ret = rc_ralloc();
     emit("mov r7, " + rtos(ret), program);
+    stack_shrink(stack.top() -> size + ALIGN);
+    stack.destroy_frame();
     return ret;
 }
 
@@ -373,6 +390,15 @@ int Compiler::expr_set(Token* program) {
     emit("st " + rtos(return_register) + ", (" + rtos(temp) + ")", program);
     rc_free_ref(return_register);
     rc_free_ref(temp);
+    return -1;
+}
+
+int Compiler::expr_write(Token* program) {
+    int r_dest = compile_one(program -> children.at(0));
+    int r_val = compile_one(program -> children.at(1));
+    emit("st " + rtos(r_val) + ", (" + rtos(r_dest) + ")", program);
+    rc_free_ref(r_dest);
+    rc_free_ref(r_val);
     return -1;
 }
 
