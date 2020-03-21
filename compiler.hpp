@@ -10,17 +10,26 @@ static int last_label = 0;
 
 class Compiler {
     public:
+    Compiler();
     // reference counts of each register
+    // -1 means reserved
     array<int, 8> registers;
+
+    // compiles a program represented as a string
+    // multiple s-expressions are ok
+    void compile_program(string program);
+
+    // if any register has a positive reference count
+    // this function will return true.
+    bool all_registers_free() const;
+
+    // exports all emitted assembly code as a string
+    string toString() const;
+
+    private:
     vector<string> asm_code;
     vector<string> asm_fn;
     vector<string> asm_data;
-    void compile_program(string program);
-    bool all_registers_free() const;
-    Compiler();
-    //private:
-    // allocates or frees registers with reference counting
-    // throws std::runtime_error if all registers are in use
     int rc_ralloc();
     void rc_keep_ref(int r_dest);
     void rc_free_ref(int r_dest);
@@ -47,7 +56,6 @@ class Compiler {
     int expr_greater_than(Token* program);
     int expr_if(Token* program);
     int expr_while(Token* program);
-    int expr_mult(Token* program);
     int expr_for(Token* program);
     void stack_define(string name, int size);
     void stack_shrink(int size);
@@ -57,7 +65,6 @@ class Compiler {
     void emit(string code, string debug);
     int _ralloc_return_val = -1;
     void ralloc_force_return(int r_dest);
-    string toString() const;
     RuntimeStack stack;
     FunctionTable ft;
 };

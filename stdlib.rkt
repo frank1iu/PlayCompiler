@@ -1,4 +1,13 @@
-(define __COMPILER_ALIGN 4)
+(begin
+(define __COMPILER_DEBUG_VAL0 0)
+(define __COMPILER_DEBUG_VAL1 0)
+(define __COMPILER_DEBUG_VAL2 0)
+(define __COMPILER_DEBUG_VAL3 0)
+(define __COMPILER_DEBUG_VAL4 0)
+(define __COMPILER_DEBUG_VAL5 0)
+(define __COMPILER_DEBUG_VAL6 0)
+(define __COMPILER_DEBUG_VAL7 0)
+(define __COMPILER_DEBUG_VAL8 0))
 
 (define (assert cond)
     (if cond 0 (while #true 0)))
@@ -16,12 +25,6 @@
 (void (call expect (call mult 5 5) 25))
 (void (call expect (call mult 5 6) 30))
 (void (call expect (call mult -2 7) -14))
-
-(define __COMPILER_HEAP_BP 65024) (; 0xfe00)
-(define (malloc size)
-    (begin (define! temp __COMPILER_HEAP_BP)
-        (set! __COMPILER_HEAP_BP (+ __COMPILER_HEAP_BP size))
-        temp))
 
 (define (leq x y)
     (if (> x y)
@@ -54,7 +57,47 @@
 (define (factorial n)
     (if (call leq n 1)
         1
-        (call mult n (call factorial (sub1 n)))))
+        (call mult (call factorial (sub1 n)) n)))
 (void (call expect (call factorial 3) 6))
 (void (call expect (call factorial 4) 24))
 (void (call expect (call factorial 5) 120))
+
+(define __COMPILER_ALIGN 4)
+(; define __COMPILER_HEAP_BP 65024) (; 0xfe00)
+(define __COMPILER_HEAP_BP 65540)
+(define (malloc size)
+    (begin
+        (write! __COMPILER_HEAP_BP size)
+        (set! __COMPILER_HEAP_BP (+ __COMPILER_ALIGN __COMPILER_HEAP_BP))
+        (define! temp __COMPILER_HEAP_BP)
+        (set! __COMPILER_HEAP_BP (+ __COMPILER_HEAP_BP size))
+        temp))
+
+(define (array_new num)
+    (begin
+        (define! base (call malloc (call mult (add1 num) __COMPILER_ALIGN)))
+        (write! base num)
+        (+ base __COMPILER_ALIGN)))
+
+(define (array_length base)
+    (* (- base __COMPILER_ALIGN)))
+
+(define (array_at base index)
+    (if (call geq index (call array_length base))
+        (call assert #false)
+        (begin
+            (* (+ (call mult index __COMPILER_ALIGN) base)))))
+
+(define (array_set base index val)
+    (if (call geq index (call array_length base))
+        (call assert #false)
+        (begin
+            (write! (+ (call mult index __COMPILER_ALIGN) base) val))))
+
+(; void (begin 
+    (define! original_base __COMPILER_HEAP_BP)
+    (set! __COMPILER_DEBUG_VAL0 __COMPILER_HEAP_BP)
+    (define! arr_test (call array_new 5))
+    (call array_set arr_test 2 3)
+    (call expect (call array_at arr_test 2) 3))
+    (set! __COMPILER_HEAP_BP original_base))

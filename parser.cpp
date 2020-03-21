@@ -129,7 +129,7 @@ int Token::getValue() const {
 }
 
 string Token::getName() const {
-    if (type != IDENTIFIER) throw runtime_error("Type Error: Expected an identifier, found a value");
+    if (type != IDENTIFIER) throw runtime_error("Type Error: Expected an identifier, found a value: ");
     return * (string*) data;
 }
 

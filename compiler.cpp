@@ -49,8 +49,6 @@ int Compiler::compile_one(Token* program) {
     } else if (op == "begin") {
         return expr_begin(program);
     } else if (op == "*") {
-        if (program -> children.size() == 2)
-            return expr_mult(program);
         return expr_deref(program);
     } else if (op == "&") {
         return expr_addr(program);
@@ -245,7 +243,9 @@ int Compiler::expr_begin(Token* program) {
     int r = 0;
     for (Token* t : program -> children) {
         r = compile_one(t);
+        rc_free_ref(r);
     }
+    rc_keep_ref(r);
     emit("# Frame info at time of destruction: ", "");
     emit("# ID: " + to_string(stack.top() -> id), "");
     for (Symbol s : stack.top() -> symbols) {
@@ -254,10 +254,6 @@ int Compiler::expr_begin(Token* program) {
     stack_shrink(stack.top() -> size);
     stack.destroy_frame();
     return r;
-}
-
-int Compiler::expr_mult(Token* program) {
-    
 }
 
 int Compiler::expr_add(Token* program) {
@@ -328,6 +324,7 @@ int Compiler::expr_define_fn(Token* program) {
         args.push_back(t -> getName());
         c.stack.push(t -> getName(), ALIGN);
     }
+    c.registers = registers;
     ft.define(name, args);
     c.ft = ft;
     c.compile_one(parent);
@@ -360,6 +357,8 @@ int Compiler::expr_call(Token* program) {
         parent -> children.push_back(c1);
         parent -> children.push_back(c2);
         compile_one(parent);
+        parent -> children.pop_back();
+        delete parent;
     }
     emit("gpc $6, r6", program);
     emit("j " + program -> children.at(0) -> getName(), program);
