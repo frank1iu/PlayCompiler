@@ -11,6 +11,7 @@ class Compiler {
     // reference counts of each register
     array<int, 8> registers;
     vector<string> asm_code;
+    vector<string> asm_fn;
     vector<string> asm_data;
     void compile_program(string program);
     bool all_registers_free() const;
@@ -26,7 +27,9 @@ class Compiler {
     int compile_one(Token* program);
     int expr_define(Token* program);
     int expr_define_stack(Token* program);
+    int expr_define_fn(Token* program);
     int expr_set(Token* program);
+    int expr_call(Token* program);
     int expr_not(Token* program);
     int expr_sub(Token* program);
     int expr_sub1(Token* program);
@@ -53,4 +56,5 @@ class Compiler {
     void ralloc_force_return(int r_dest);
     string toString() const;
     RuntimeStack stack;
+    FunctionTable ft;
 };

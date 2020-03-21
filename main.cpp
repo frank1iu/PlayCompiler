@@ -21,8 +21,8 @@ int main() {
         c.compile_program(program);
         cout << c.toString();
     } catch (runtime_error error) {
-        cerr << error.what() << endl;
         cerr << c.toString();
+        cerr << "=== Compilation aborted ===" << endl << error.what() << endl;
     }
     if (DEBUG) {
         if (!c.all_registers_free()) {
@@ -31,11 +31,5 @@ int main() {
                 cerr << "r" << i << "'s refcount is: " << c.registers[i] << endl;
             }
         }
-        /*
-        cerr << "Stack information at time of exit:" << endl;
-        for (Compiler::Symbol s: c.symbol_table) {
-            cerr << "offset " << s.offset << ": " << s.name << endl;
-        }*/
     }
 }
-

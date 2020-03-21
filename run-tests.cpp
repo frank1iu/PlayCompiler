@@ -185,3 +185,17 @@ TEST_CASE( "RuntimeStack", "[stack]") {
     REQUIRE(rs.offset_of("test") == 4);
     REQUIRE(rs.offset_of("test2") == 0);
 }
+
+TEST_CASE( "FunctionTable", "[fn]") {
+    FunctionTable ft;
+    vector<string> args1 = {"a", "b", "c"};
+    ft.define("fn1", args1);
+    REQUIRE(!ft.exists("asdf"));
+    REQUIRE(ft.exists("fn1"));
+    auto f = ft.find("fn1");
+    REQUIRE(f -> argc == 3);
+    REQUIRE(f -> name == "fn1");
+    REQUIRE(f -> args.at(0) == "a");
+    REQUIRE(f -> args.at(1) == "b");
+    REQUIRE(f -> args.at(2) == "c");
+}

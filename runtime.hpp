@@ -35,3 +35,19 @@ class RuntimeStack {
     Context* top();
     RuntimeStack();
 };
+
+class FunctionTable {
+    public:
+    class Function {
+        public:
+        string name;
+        int argc;
+        vector<string> args;
+        Function(string name, vector<string> args);
+    };
+    void define(string name, vector<string> args);
+    bool exists(string name) const;
+    Function* find(string name) const;
+    private:
+    vector<Function*> functions;
+};

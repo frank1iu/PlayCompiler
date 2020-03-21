@@ -68,3 +68,27 @@ Symbol Context::find(string name) const {
     }
     throw runtime_error(name + ": this symbol is undefined");
 }
+
+bool FunctionTable::exists(string name) const {
+    for (auto f : functions) {
+        if (f -> name == name) return true;
+    }
+    return false;
+}
+
+FunctionTable::Function* FunctionTable::find(string name) const {
+    for (auto f : functions) {
+        if (f -> name == name) return f;
+    }
+    throw runtime_error(name + ": this symbol is undefined");
+}
+
+FunctionTable::Function::Function(string name, vector<string> args) {
+    this -> name = name;
+    this -> args = args;
+    argc = args.size();
+}
+
+void FunctionTable::define(string name, vector<string> args) {
+    functions.push_back(new FunctionTable::Function(name, args));
+}

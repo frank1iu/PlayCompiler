@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 
+#define ALIGN 4
+
 using namespace std;
 
 void Compiler::compile_program(string program) {
@@ -62,6 +64,8 @@ int Compiler::compile_one(Token* program) {
         return expr_while(program);
     } else if (op == "for") {
         return expr_for(program);
+    } else if (op == "call") {
+        return expr_call(program);
     } else {
         throw runtime_error("Unrecognized expression in " + program -> toString());
     }
@@ -74,6 +78,7 @@ int Compiler::load_value_stack(Token* program) {
     emit("ld " + to_string(offset) + "(r5), " + rtos(r), program);
     return r;
 }
+
 int Compiler::load_value(Token* program) {
     int r;
     if (program -> type == VALUE) {
@@ -121,7 +126,7 @@ int Compiler::expr_addr(Token* program) {
 
 int Compiler::expr_define_stack(Token* program) {
     string name = program -> children.at(0) -> getName();
-    stack_define(name, 4);
+    stack_define(name, ALIGN);
     int return_register = compile_one(program -> children.at(1));
     emit("st " + rtos(return_register) + ", (r5)", program);
     rc_free_ref(return_register);
@@ -226,9 +231,10 @@ int Compiler::expr_if(Token* program) {
 
 int Compiler::expr_begin(Token* program) {
     stack.new_frame();
-    emit("# Frame created. ID: " + to_string(stack.top() -> id), "");
+    emit("# Frame created. ID: " + to_string(stack.top() -> id), program);
+    int r = 0;
     for (Token* t : program -> children) {
-        compile_one(t);
+        r = compile_one(t);
     }
     emit("# Frame info at time of destruction: ", "");
     emit("# ID: " + to_string(stack.top() -> id), "");
@@ -237,7 +243,7 @@ int Compiler::expr_begin(Token* program) {
     }
     stack_shrink(stack.top() -> size);
     stack.destroy_frame();
-    return -1;
+    return r;
 }
 
 int Compiler::expr_mult(Token* program) {
@@ -283,6 +289,9 @@ int Compiler::expr_sub(Token* program) {
 }
 
 int Compiler::expr_define(Token* program) {
+    if (program -> children.at(0) -> children.size() != 0) {
+        return expr_define_fn(program);
+    }
     if (program -> children.at(1) -> children.size() != 0) {
         throw runtime_error("define: defining from expression is not supported; use set!");
     }
@@ -291,6 +300,49 @@ int Compiler::expr_define(Token* program) {
     asm_data.push_back(name + ":");
     asm_data.push_back(".long " + to_string(val));
     return -1;
+}
+
+int Compiler::expr_define_fn(Token* program) {
+    Compiler c;
+    string name = program -> children.at(0) -> getName();
+    vector<string> args;
+    for (Token* t : program -> children.at(0) -> children) {
+        args.push_back(t -> getName());
+        c.stack.push(t -> getName(), ALIGN);
+    }
+    ft.define(name, args);
+    int r_loc = c.compile_one(program -> children.at(1));
+    asm_fn.push_back(name + ": ");
+    asm_fn.insert(asm_fn.end(), c.asm_code.begin(), c.asm_code.end());
+    if (r_loc != -1) {
+        asm_fn.push_back("mov " + rtos(r_loc) + ", r7");
+    }
+    asm_fn.push_back("j (r6)");
+    return -1;
+}
+
+int Compiler::expr_call(Token* program) {
+    string name = program -> children.at(0) -> getName();
+    if (!ft.exists(name))
+        throw runtime_error(name + ": this function is undefined");
+    auto func = ft.find(name);
+    if (func -> argc != program -> children.size() - 1)
+        throw runtime_error(name + ": expects " + to_string(func -> argc) + " arguments, but given " + to_string(program -> children.size() - 1));
+    stack.new_frame();
+    for (int i = 1; i < program -> children.size(); i++) {
+        Token* parent = new Token("define!");
+        string arg_name = func -> args.at(i - 1);
+        Token* c1 = new Token(arg_name);
+        Token* c2 = program -> children.at(i);
+        parent -> children.push_back(c1);
+        parent -> children.push_back(c2);
+        compile_one(parent);
+    }
+    emit("gpc $6, r6", program);
+    emit("j " + program -> children.at(0) -> getName(), program);
+    int ret = rc_ralloc();
+    emit("mov r7, " + rtos(ret), program);
+    return ret;
 }
 
 int Compiler::expr_for(Token* program) {
@@ -358,20 +410,23 @@ int Compiler::rc_ralloc() {
     cerr << toString() << endl;
     throw runtime_error("rc_ralloc cannot find a free register!");
 }
+
 void Compiler::rc_keep_ref(int r_dest) {
     registers[r_dest]++;
 }
+
 void Compiler::rc_free_ref(int r_dest) {
     if (r_dest == -1) return;
     if (registers[r_dest] == 0) throw runtime_error("rc_free_ref: double free on r" + to_string(r_dest));
     registers[r_dest]--;
 }
+
 void Compiler::ralloc_force_return(int r_dest) {
     _ralloc_return_val = r_dest;
 }
 
 Compiler::Compiler() {
-    registers = {0, 0, 0, 0, 0, -1, -1, 0};
+    registers = {0, 0, 0, 0, 0, -1, -1, -1};
     asm_data.push_back(".pos 0x4000\t# Data Region");
 };
 
@@ -402,6 +457,10 @@ string Compiler::toString() const {
         ret += s + "\n";
     }
     for (string s : asm_data) {
+        ret += s + "\n";
+    }
+    ret += ".pos 0xc000\n";
+    for (string s : asm_fn) {
         ret += s + "\n";
     }
     ret += ".pos 0xfe00\nstack:\n";
