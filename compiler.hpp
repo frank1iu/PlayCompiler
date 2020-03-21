@@ -6,6 +6,8 @@
 
 using namespace std;
 
+static int last_label = 0;
+
 class Compiler {
     public:
     // reference counts of each register
@@ -29,6 +31,7 @@ class Compiler {
     int expr_define_stack(Token* program);
     int expr_define_fn(Token* program);
     int expr_set(Token* program);
+    int expr_void(Token* program);
     int expr_write(Token* program);
     int expr_call(Token* program);
     int expr_not(Token* program);
@@ -48,7 +51,6 @@ class Compiler {
     int expr_for(Token* program);
     void stack_define(string name, int size);
     void stack_shrink(int size);
-    int last_label = 0;
     string next_label();
     string rtos(int r) const;
     void emit(string code, Token* program);

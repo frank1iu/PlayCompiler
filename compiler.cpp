@@ -68,6 +68,8 @@ int Compiler::compile_one(Token* program) {
         return expr_for(program);
     } else if (op == "call") {
         return expr_call(program);
+    } else if (op == "void") {
+        return expr_void(program);
     } else {
         throw runtime_error("Unrecognized expression in " + program -> toString());
     }
@@ -229,6 +231,12 @@ int Compiler::expr_if(Token* program) {
     compile_one(program -> children.at(1));
     emit(label_end + ":", program);
     return shared_register;
+}
+
+int Compiler::expr_void(Token* program) {
+    int ignored = compile_one(program -> children.at(0));
+    rc_free_ref(ignored);
+    return -1;
 }
 
 int Compiler::expr_begin(Token* program) {
