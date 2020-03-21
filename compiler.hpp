@@ -26,7 +26,7 @@ class Compiler {
     // exports all emitted assembly code as a string
     string toString() const;
 
-    private:
+    // private:
     vector<string> asm_code;
     vector<string> asm_fn;
     vector<string> asm_data;

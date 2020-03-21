@@ -100,72 +100,8 @@ TEST_CASE( "Parser::parse", "[parse]" ) {
     REQUIRE( t -> toString() == program );
 }
 
-TEST_CASE( "Compiler ralloc reference counting", "[compile]" ) {
-    Compiler c;
-    int first = c.rc_ralloc();
-    REQUIRE( first == 0 );
-    c.rc_keep_ref(first);
-    REQUIRE( c.registers[first] == 2);
-
-    int second = c.rc_ralloc();
-    REQUIRE( second == 1 );
-
-    c.rc_free_ref(first);
-    c.rc_free_ref(first);
-    int third = c.rc_ralloc();
-    REQUIRE( third == 0 );
-}
-
-TEST_CASE( "Compiler define", "[compile]") {
-    Compiler c;
-    REQUIRE(c.asm_data.size() == 1);
-    c.compile_program("(define asdf 1)");
-    REQUIRE(c.asm_data.at(1) == "asdf:");
-    REQUIRE(c.asm_data.at(2) == ".long 1");
-    REQUIRE(c.asm_data.size() == 3);
-}
-
-TEST_CASE( "Compiler set", "[compile]") {
-    Compiler c;
-    c.compile_program("(set! asdf 1)");
-    REQUIRE(c.asm_code.at(0) == "ld $1, r0\t# 1");
-    REQUIRE(c.asm_code.at(1) == "ld $asdf, r1\t# (set! asdf 1)");
-    REQUIRE(c.asm_code.at(2) == "st r0, (r1)\t# (set! asdf 1)");
-    REQUIRE(c.asm_code.size() == 4);
-    REQUIRE(c.all_registers_free());
-}
-
-TEST_CASE( "Compiler add", "[compile]") {
-    Compiler c;
-    c.compile_program("(set! test (+ 2 3))");
-    REQUIRE(c.asm_code.at(0) == "ld $2, r0\t# 2");
-    REQUIRE(c.asm_code.at(1) == "ld $3, r1\t# 3");
-    REQUIRE(c.asm_code.at(2) == "add r0, r1\t# (+ 2 3)");
-    REQUIRE(c.asm_code.at(3) == "ld $test, r0\t# (set! test (+ 2 3))");
-    REQUIRE(c.asm_code.at(4) == "st r1, (r0)\t# (set! test (+ 2 3))");
-    REQUIRE(c.asm_code.size() == 6);
-    REQUIRE(c.all_registers_free());
-
-    Compiler c2;
-    c2.compile_program("(add1 2)");
-    REQUIRE(c2.asm_code.at(0) == "ld $2, r0\t# 2");
-    REQUIRE(c2.asm_code.at(1) == "inc r0\t# (add1 2)");
-
-    Compiler c3;
-    c3.compile_program("(add1 1)");
-    REQUIRE(c3.asm_code.at(0) == "ld $1, r0\t# 1");
-    REQUIRE(c3.asm_code.at(1) == "inc r0\t# (add1 1)");
-}
-
-TEST_CASE( "Compiler sub", "[compile]") {
-    Compiler c;
-    c.compile_program("(- 1 2)");
-    REQUIRE(c.asm_code.at(0) == "ld $1, r0\t# 1");
-    REQUIRE(c.asm_code.at(1) == "ld $2, r1\t# 2");
-    REQUIRE(c.asm_code.at(2) == "not r1\t# (not 2)");
-    REQUIRE(c.asm_code.at(3) == "inc r1\t# (add1 (not 2))");
-    REQUIRE(c.asm_code.at(4) == "add r0, r1\t# (+ 1 (add1 (not 2)))");
-    REQUIRE(c.asm_code.size() == 6);
+TEST_CASE( "Test files integrety", "[file]") {
+    system("cd tests && make");
 }
 
 #define ALIGN 4
