@@ -348,14 +348,13 @@ int Compiler::expr_call(Token* program) {
     if (func -> argc != program -> children.size() - 1)
         throw runtime_error(name + ": expects " + to_string(func -> argc) + " arguments, but given " + to_string(program -> children.size() - 1));
     stack.new_frame(); // saved registers
-    /*
     vector<int> register_cache;
     for (int i = 0; i < registers.size(); i++) {
         if (registers.at(i) > 0) {
             register_cache.push_back(i);
         }
-    }*/
-    for (int i = 0; i < 5; i++) {
+    }
+    for (int i: register_cache) {
         stack_define(rtos(i), ALIGN);
         emit("st " + rtos(i) + ", (r5)", "[function call: save registers] [call to " + name + "]");
     }
@@ -376,11 +375,11 @@ int Compiler::expr_call(Token* program) {
     emit("j " + program -> children.at(0) -> getName(), program);
     stack_shrink(stack.top() -> size + ALIGN);
     stack.destroy_frame(); // arguments
-    for (int i = 0; i < 5; i++) {
+    for (int i: register_cache) {
         string offset = to_string(stack.offset_of(rtos(i)));
         emit("ld " + offset + "(r5), " + rtos(i), "[function call: load saved registers] [call to " + name + "]");
     }
-    stack_shrink(4 * 5);
+    stack_shrink(ALIGN * register_cache.size());
     stack.destroy_frame(); // saved registers
     int ret = rc_ralloc();
     emit("mov r7, " + rtos(ret), program);
