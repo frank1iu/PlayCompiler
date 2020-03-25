@@ -74,24 +74,24 @@
 
 (define (array_new num)
     (begin
-        (define! base (call malloc (call mult (add1 num) __COMPILER_ALIGN)))
-        (write! base num)
-        (+ base __COMPILER_ALIGN)))
+        (define! base4 (call malloc (call mult (add1 num) __COMPILER_ALIGN)))
+        (write! base4 num)
+        (+ base4 __COMPILER_ALIGN)))
 
-(define (array_length base)
-    (* (- base __COMPILER_ALIGN)))
+(define (array_length base0)
+    (* (- base0 __COMPILER_ALIGN)))
 
-(define (array_at base index)
-    (if (call geq index (call array_length base))
+(define (array_at base1 index)
+    (if (call geq index (call array_length base1))
         (call assert #false)
         (begin
-            (* (+ (call mult index __COMPILER_ALIGN) base)))))
+            (* (+ (call mult index __COMPILER_ALIGN) base1)))))
 
-(define (array_set base index val)
-    (if (call geq index (call array_length base))
+(define (array_set base2 index val)
+    (if (call geq index (call array_length base2))
         (call assert #false)
         (begin
-            (write! (+ (call mult index __COMPILER_ALIGN) base) val))))
+            (write! (+ (call mult index __COMPILER_ALIGN) base2) val))))
 
-(define (array_empty base)
-    (= (call array_length base) 0))
+(define (array_empty base3)
+    (= (call array_length base3) 0))

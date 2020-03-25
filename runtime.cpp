@@ -1,5 +1,6 @@
 #include "runtime.hpp"
 #include <string>
+#include <iostream>
 
 RuntimeStack::RuntimeStack() {
     Context* c = new Context();
@@ -43,7 +44,12 @@ Context* RuntimeStack::top() {
 
 int RuntimeStack::offset_of(string name) const {
     for (Context* c : contexts) {
-        if (c -> defined(name)) return c -> find(name).offset + c -> offset;
+        if (c -> defined(name)) {
+            if (c -> find(name).offset + c -> offset > 60) {
+                cerr << "[Warn] Offset of " << name << " is over 60" << endl;
+            }
+            return c -> find(name).offset + c -> offset;
+        }
     }
     throw runtime_error(name + ": this symbol is undefined");
 }

@@ -186,12 +186,12 @@ int Compiler::expr_while(Token* program) {
     emit(label_loop_start + ":", program);
     int cond_result = compile_one(cond_child);
     emit("bgt " + rtos(cond_result) + ", " + label_loop_continue, program);
-    emit("br " + label_loop_end, program);
+    emit("j " + label_loop_end, program);
     emit(label_loop_continue + ":", program);
     rc_free_ref(cond_result);
     int body_result = compile_one(body_child);
     rc_free_ref(body_result);
-    emit("br " + label_loop_start, program);
+    emit("j " + label_loop_start, program);
     emit(label_loop_end + ":", program);
     return -1;
 }
@@ -347,7 +347,19 @@ int Compiler::expr_call(Token* program) {
     auto func = ft.find(name);
     if (func -> argc != program -> children.size() - 1)
         throw runtime_error(name + ": expects " + to_string(func -> argc) + " arguments, but given " + to_string(program -> children.size() - 1));
-    stack.new_frame();
+    stack.new_frame(); // saved registers
+    /*
+    vector<int> register_cache;
+    for (int i = 0; i < registers.size(); i++) {
+        if (registers.at(i) > 0) {
+            register_cache.push_back(i);
+        }
+    }*/
+    for (int i = 0; i < 5; i++) {
+        stack_define(rtos(i), ALIGN);
+        emit("st " + rtos(i) + ", (r5)", "[function call: save registers] [call to " + name + "]");
+    }
+    stack.new_frame(); // arguments
     emit("nop", "[begin function call: " + name + "]");
     for (int i = 1; i < program -> children.size(); i++) {
         Token* parent = new Token("define!");
@@ -362,10 +374,16 @@ int Compiler::expr_call(Token* program) {
     }
     emit("gpc $6, r6", program);
     emit("j " + program -> children.at(0) -> getName(), program);
+    stack_shrink(stack.top() -> size + ALIGN);
+    stack.destroy_frame(); // arguments
+    for (int i = 0; i < 5; i++) {
+        string offset = to_string(stack.offset_of(rtos(i)));
+        emit("ld " + offset + "(r5), " + rtos(i), "[function call: load saved registers] [call to " + name + "]");
+    }
+    stack_shrink(4 * 5);
+    stack.destroy_frame(); // saved registers
     int ret = rc_ralloc();
     emit("mov r7, " + rtos(ret), program);
-    stack_shrink(stack.top() -> size + ALIGN);
-    stack.destroy_frame();
     return ret;
 }
 
