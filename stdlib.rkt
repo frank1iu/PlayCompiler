@@ -1,4 +1,9 @@
-(begin
+;#define #true 1
+;#define #false 0
+;#define #nullptr 0
+;#eval $.DEBUG = true
+
+;#if $.DEBUG
 (define __COMPILER_DEBUG_VAL0 0)
 (define __COMPILER_DEBUG_VAL1 0)
 (define __COMPILER_DEBUG_VAL2 0)
@@ -7,7 +12,9 @@
 (define __COMPILER_DEBUG_VAL5 0)
 (define __COMPILER_DEBUG_VAL6 0)
 (define __COMPILER_DEBUG_VAL7 0)
-(define __COMPILER_DEBUG_VAL8 0))
+(define __COMPILER_DEBUG_VAL8 0)
+(define __COMPILER_DEBUG_VAL9 0)
+;#endif
 
 (define (assert cond)
     (if cond 0 (while #true 0)))

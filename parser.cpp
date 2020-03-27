@@ -95,20 +95,6 @@ Token::Token(enum Type type, void* data) {
 }
 
 Token::Token(string data) {
-    if (data == "#true") {
-        int* d = new int;
-        *d = 1;
-        this -> type = VALUE;
-        this -> data = d;
-        return;
-    }
-    if (data == "#false") {
-        int* d = new int;
-        *d = 0;
-        this -> type = VALUE;
-        this -> data = d;
-        return;
-    }
     try {
         int i = stoi(data);
         int* d = new int;
