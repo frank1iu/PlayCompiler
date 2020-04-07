@@ -3,11 +3,6 @@
 ## Usage
 
 ```sh
-./main < program.rkt
+./compile.sh program.rkt
 ```
-
-### To include the standard library:
-
-```sh
-cat stdlib.rkt program.rkt | ./main
-```
+The output will be stored in program.rkt.s
