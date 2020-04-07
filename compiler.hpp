@@ -13,6 +13,8 @@ class Compiler {
     Compiler();
     // reference counts of each register
     // -1 means reserved
+    // r5, r6, r7 start as reserved, so there are actually
+    // 8 - 3 = 5 available registers to use.
     array<int, 8> registers;
 
     // compiles a program represented as a string

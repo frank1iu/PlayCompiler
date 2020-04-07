@@ -14,13 +14,36 @@
 (define __COMPILER_DEBUG_VAL7 0)
 (define __COMPILER_DEBUG_VAL8 0)
 (define __COMPILER_DEBUG_VAL9 0)
+
+(define __EXPECT_VAL1 0)
+(define __EXPECT_VAL2 0)
 ;#endif
 
 (define (assert cond)
     (if cond 0 (while #true 0)))
 
 (define (expect val1 val2)
-    (call assert (= val1 val2)))
+    (begin
+    ;#if $.DEBUG
+        (set! __EXPECT_VAL1 val1)
+        (set! __EXPECT_VAL2 val2)
+    ;#endif
+        (call assert (= val1 val2))))
+
+(define (max x y)
+    (if (> x y)
+        x
+        y))
+
+(define (min x y)
+    (if (< x y)
+        x
+        y))
+
+(define (abs x)
+    (if (< x 0)
+        (add1 (not x))
+        x))
 
 (define (mult x y)
     (begin
@@ -52,38 +75,38 @@
         1
         (call mult (call factorial (sub1 n)) n)))
 
-(define __COMPILER_ALIGN 4)
+;#define #align 4
 (define __COMPILER_HEAP_BP 65540)
 (define (malloc size)
     (begin
         (write! __COMPILER_HEAP_BP -1)
-        (set! __COMPILER_HEAP_BP (+ __COMPILER_ALIGN __COMPILER_HEAP_BP))
+        (set! __COMPILER_HEAP_BP (+ #align __COMPILER_HEAP_BP))
         (write! __COMPILER_HEAP_BP size)
-        (set! __COMPILER_HEAP_BP (+ __COMPILER_ALIGN __COMPILER_HEAP_BP))
+        (set! __COMPILER_HEAP_BP (+ #align __COMPILER_HEAP_BP))
         (define! temp __COMPILER_HEAP_BP)
         (set! __COMPILER_HEAP_BP (+ __COMPILER_HEAP_BP size))
         temp))
 
 (define (array_new num)
     (begin
-        (define! base4 (call malloc (call mult (add1 num) __COMPILER_ALIGN)))
+        (define! base4 (call malloc (call mult (add1 num) #align)))
         (write! base4 num)
-        (+ base4 __COMPILER_ALIGN)))
+        (+ base4 #align)))
 
 (define (array_length base0)
-    (* (- base0 __COMPILER_ALIGN)))
+    (* (- base0 #align)))
 
 (define (array_at base1 index)
     (if (call geq index (call array_length base1))
         (call assert #false)
         (begin
-            (* (+ (call mult index __COMPILER_ALIGN) base1)))))
+            (* (+ (call mult index #align) base1)))))
 
 (define (array_set base2 index val)
     (if (call geq index (call array_length base2))
         (call assert #false)
         (begin
-            (write! (+ (call mult index __COMPILER_ALIGN) base2) val))))
+            (write! (+ (call mult index #align) base2) val))))
 
 (define (array_empty base3)
     (= (call array_length base3) 0))

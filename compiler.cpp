@@ -26,7 +26,7 @@ int Compiler::compile_one(Token* program) {
         return load_value(program);
     }
     string op = program -> getName();
-    if (op == ";") {
+    if (op == "ignored") {
         return -1;
     } else if (op == "define") {
         return expr_define(program);

@@ -34,7 +34,7 @@ void RuntimeStack::push(string name, int size) {
     for (Symbol & s: top() -> symbols) {
         s.offset += size;
     }
-    Symbol s {.name = name, .offset = 0, .is_return_address = false};
+    Symbol s {.name = name, .offset = 0};
     top() -> symbols.push_back(s);
 }
 

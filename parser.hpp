@@ -4,7 +4,7 @@
 #include <stack>
 #include <queue>
 #include <algorithm>
-#include <cstring>
+
 using namespace std;
 
 enum Type {
