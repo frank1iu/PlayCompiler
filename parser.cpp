@@ -1,6 +1,5 @@
 #include "parser.hpp"
 #include <iostream>
-#include <boost/algorithm/string.hpp>
 
 vector<string> Parser::split_expressions(string program) {
     vector<string> ret;
@@ -61,7 +60,12 @@ queue<string> Parser::queue_tokens(string program) {
     for (unsigned int i = 1; i < program_formatted.length(); i++) {
         if (program_formatted[i] == ' ') {
             string token = program_formatted.substr(last_index, i - last_index);
-            boost::algorithm::trim(token);
+            token.erase(token.begin(), find_if(token.begin(), token.end(), [](int ch) {
+                return !isspace(ch);
+            }));
+            token.erase(find_if(token.rbegin(), token.rend(), [](int ch) {
+                return !isspace(ch);
+            }).base(), token.end());
             if (token == "") continue;
             tokens_raw.push(token);
             last_index = i + 1;
