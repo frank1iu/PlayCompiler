@@ -7,8 +7,17 @@
 
 ## Building
 
+### Building Binaries
 ```sh
 make
+```
+
+### Building for Web
+Note: Requires [Emscripten](https://emscripten.org/)
+
+Note: Does not support preprocessor
+```sh
+make WASM=true
 ```
 
 ## Usage
@@ -69,7 +78,7 @@ The output will be stored in program.rkt.s
 (call array_set array_start index 0)))
 ```
 
-### Compiler Output (Abridged - stdlib functions omitted)
+### Compiler Output (Abridged - stdlib functions and tests omitted)
 ```asm
 ld  $stacktop, r5
 nop		# [begin function call: array_new]

@@ -1,7 +1,3 @@
-# Uncomment to compile to web (main.html, main.js, main.wasm)
-# Compiling to web requires Emscripten. https://emscripten.org/
-# WASM = true
-
 FLAGS = -std=c++2a -c -g -O0 -Wall -Wextra -pedantic
 LD_FLAGS = -std=c++2a -lpthread -lm
 ifdef WASM
