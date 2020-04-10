@@ -1,4 +1,4 @@
-# Uncomment next line to compile to web (main.html, main.js, main.wasm)
+# Uncomment to compile to web (main.html, main.js, main.wasm)
 # Compiling to web requires Emscripten. https://emscripten.org/
 # WASM = true
 
