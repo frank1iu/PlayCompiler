@@ -1,11 +1,20 @@
-all: runTests main
+# Uncomment next line to compile to web (main.html, main.js, main.wasm)
+# Compiling to web requires Emscripten. https://emscripten.org/
+# WASM = true
+
+FLAGS = -std=c++2a -c -g -O0 -Wall -Wextra -pedantic
+LD_FLAGS = -std=c++2a -lpthread -lm
+ifdef WASM
+CXX = em++
+OBJ = main.html
+else
+CXX = clang++
+OBJ = main
+endif
+
+all: runTests $(OBJ)
 
 .PHONY: all clean
-
-CXX = clang++
-
-FLAGS = -std=c++2a -stdlib=libc++ -c -g -O0 -Wall -Wextra -pedantic -Wno-c99-extensions
-LD_FLAGS = -std=c++2a -stdlib=libc++ -lc++abi -lpthread -lm
 
 parser.o: parser.cpp parser.hpp
 	$(CXX) $(FLAGS) -o parser.o parser.cpp
@@ -28,8 +37,8 @@ runTests: test.o parser.o run-tests.o compiler.o runtime.o
 main.o: main.cpp
 	$(CXX) $(FLAGS) -o main.o main.cpp
 
-main: main.o parser.o compiler.o runtime.o
-	$(CXX) $(LD_FLAGS) -o main runtime.o main.o parser.o compiler.o
+$(OBJ): main.o parser.o compiler.o runtime.o
+	$(CXX) $(LD_FLAGS) -o $(OBJ) runtime.o main.o parser.o compiler.o
 
 clean:
-	rm *.o runTests main
+	rm *.o runTests $(OBJ)

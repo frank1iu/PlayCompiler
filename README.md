@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Some kind of C++ compiler
+- Any C++ compiler
 - Node.js
 
 ## Building
