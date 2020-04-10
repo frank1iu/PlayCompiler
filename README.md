@@ -31,9 +31,9 @@ The output will be stored in program.rkt.s
 (define (is_big num)
     (> num 4))
 ;; tests for is_big
-(void (call (expect (is_big 0) #false)))
-(void (call (expect (is_big 4) #false)))
-(void (call (expect (is_big 5)  #true)))
+(void (call expect (call is_big 0) #false))
+(void (call expect (call is_big 4) #false))
+(void (call expect (call is_big 5)  #true))
 
 (define array_start #nullptr) ;; int*
 
@@ -54,13 +54,16 @@ The output will be stored in program.rkt.s
 ### Preprocessor Output
 ```lisp
 (define (is_big num) 
-(> num 5)) 
-(define array_start 0) 
+(> num 4)) 
+(void (call expect (call is_big 0) 0)) 
+(void (call expect (call is_big 4) 0)) 
+(void (call expect (call is_big 5)  1)) 
+(define array_start 0)  
 (set! array_start (call array_new 10)) 
-(for 
-(define! index 0) 
-(< index 10) 
-(set! index (add1 index)) 
+(for                             
+(define! index 0)            
+(< index 10)          
+(set! index (add1 index))    
 (if (call is_big index) 
 (call array_set array_start index index) 
 (call array_set array_start index 0)))
