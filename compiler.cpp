@@ -217,18 +217,27 @@ int Compiler::expr_greater_than(Token* program) {
 }
 
 int Compiler::expr_if(Token* program) {
-    int return_register = compile_one(program -> children.at(0));
+    int cond_return_register = compile_one(program -> children.at(0));
     string label_true_ans = next_label();
     string label_end = next_label();
-    emit("bgt " + rtos(return_register) + ", " + label_true_ans, program);
-    rc_free_ref(return_register);
-    int shared_register = compile_one(program -> children.at(2));
+    emit("bgt " + rtos(cond_return_register) + ", " + label_true_ans, program);
+    rc_free_ref(cond_return_register);
+    int if_expr_return_register = rc_ralloc();
+    int child_register_false_ans = compile_one(program -> children.at(2));
+    if (child_register_false_ans != -1) {
+        emit("mov " + rtos(child_register_false_ans) + ", " + rtos(if_expr_return_register), program);
+        rc_free_ref(child_register_false_ans);
+    }
+    
     emit("br " + label_end, program);
     emit(label_true_ans + ":", program);
-    ralloc_force_return(shared_register);
-    compile_one(program -> children.at(1));
+    int child_register_true_ans = compile_one(program -> children.at(1));
+    if (child_register_true_ans != -1) {
+        emit("mov " + rtos(child_register_true_ans) + ", " + rtos(if_expr_return_register), program);
+        rc_free_ref(child_register_true_ans);
+    }
     emit(label_end + ":", program);
-    return shared_register;
+    return if_expr_return_register;
 }
 
 int Compiler::expr_void(Token* program) {

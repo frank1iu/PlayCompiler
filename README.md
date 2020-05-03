@@ -187,7 +187,7 @@ add r0, r5		# [stack shrink]
 j   L52		# (while (< index 10) (begin (if (call is_big index) (call array_set array_start index index) (call array_set array_start index 0)) (set! index (add1 index))))
 	L54:		# (while (< index 10) (begin (if (call is_big index) (call array_set array_start index index) (call array_set array_start index 0)) (set! index (add1 index))))
 halt
-.pos 0x4000		# Data Region
+.pos 0xc000
 	is_big: 
 ld  $-4, r0		# [stack allocation for __COMPILER_RETURN_ADDRESS]
 add r0, r5		# [stack allocation for __COMPILER_RETURN_ADDRESS]
