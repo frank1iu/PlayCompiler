@@ -5,19 +5,20 @@
         <style>
             #code {
                 font-family: monospace;
-                font-size: 1.1em;
             }
             .margins {
-                margin-top: 3vh;
-                margin-bottom: 3vh;
+                margin-top: 2vh;
+                margin-bottom: 2vh;
             }
         </style>
     </head>
     <body>
         <div style="text-align: center;">
+            <h2 class="margins">Racket to SM213 Assmebly Compiler in C++</h2>
+            <a href="https://github.com/frank1iu/PlayCompiler">https://github.com/frank1iu/PlayCompiler</a><br>
+            <textarea id="code" class="margins" cols=100 rows=15 autocomplete="off" placeholder="Enter Racket code or select from examples..."></textarea><br>
+            <span>Load example: <a href="#" id="ex3">Factorial</a>, <a href="#" id="ex2">Fibonacci</a>, <a href="#" id="ex1">Multiply</a></span><br>
             <button type="button" class="btn btn-primary btn-lg margins" id="compile">Compile!</button><br>
-            <span>Load example: <a href="#" id="ex1">Multiply</a>, <a href="#" id="ex2">Fibonacci</a></span><br>
-            <textarea id="code" class="margins" cols=75 rows=20 autocomplete="off" placeholder="Enter Racket code or select from examples..."></textarea>
         </div>
         <script>
             document.getElementById("compile").addEventListener("click", el => {
@@ -54,6 +55,35 @@
 (set! result3 (call fib 6))
 (set! result4 (call fib 7))
 (set! result5 (call fib 8))`;
+            });
+            document.getElementById("ex3").addEventListener("click", el => {
+                document.getElementById("code").value =
+`(define (mult x y)
+    (begin
+        (define! temp x)
+        (for
+            (define! j 1)   (< j y)   (set! j (add1 j))
+            (set! x (+ temp x)))
+        x))
+
+(define (leq x y)
+    (if (> x y)
+    0
+    1))
+
+(define (factorial n)
+    (if (call leq n 1)
+        1
+        (call mult (call factorial (sub1 n)) n)))
+
+(define fact7 0)
+(define fact8 0)
+(define fact9 0)
+(define fact10 0)
+(set! fact7 (call factorial 7))
+(set! fact8 (call factorial 8))
+(set! fact9 (call factorial 9))
+(set! fact10 (call factorial 10))`;
             });
         </script>
     </body>
