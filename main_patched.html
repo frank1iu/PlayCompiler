@@ -1214,7 +1214,8 @@
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
     </div>
     <div style="text-align: center;">
-      <a style="font-size: 2em; background-color: forestgreen; color: white; border-radius: 10px; text-decoration: none; padding: 5px; " href="index.html">Go Back</a>
+      <a style="font-size: 1.5em; background-color: forestgreen; color: white; border-radius: 10px; text-decoration: none; padding: 5px; " href="index.html">Go Back</a>
+      <a style="font-size: 1.5em; background-color: forestgreen; color: white; border-radius: 10px; text-decoration: none; padding: 5px; margin-left: 5vw" href="#" id="download-btn">Download Code</a>
       <div style="height: 3vh"></div>
     </div>
     <div>
@@ -1226,13 +1227,25 @@
       var progressElement = document.getElementById('progress');
       var spinnerElement = document.getElementById('spinner');
 
+      document.getElementById("download-btn").addEventListener("click", () => {
+        const fake_download_element = document.createElement('a');
+        fake_download_element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(document.getElementById('output').innerHTML.split("<br>").join("\n")));
+        fake_download_element.setAttribute('download', 'output.s');
+
+        fake_download_element.style.display = 'none';
+        document.body.appendChild(fake_download_element);
+
+        fake_download_element.click();
+
+        document.body.removeChild(fake_download_element);
+      });
+
       var Module = {
         preRun: [function () {
           window.stdin_index = 0;
           function stdin() {
             const program_string = atob(window.location.href.split("#!")[1]);
             console.log(program_string);
-            // const program_string = "(define a 133)\n(set! a 4)";
             if (window.stdin_index == program_string.length) return null;
             const char_code =  program_string.charCodeAt(window.stdin_index);
             window.stdin_index++;

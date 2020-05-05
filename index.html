@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <style>
+            #code {
+                font-family: monospace;
+                font-size: 1.1em;
+            }
+            .margins {
+                margin-top: 3vh;
+                margin-bottom: 3vh;
+            }
+        </style>
+    </head>
+    <body>
+        <div style="text-align: center;">
+            <button type="button" class="btn btn-primary btn-lg margins" id="compile">Compile!</button><br>
+            <span>Load example: <a href="#" id="ex1">Multiply</a>, <a href="#" id="ex2">Fibonacci</a></span><br>
+            <textarea id="code" class="margins" cols=75 rows=20 autocomplete="off" placeholder="Enter Racket code or select from examples..."></textarea>
+        </div>
+        <script>
+            document.getElementById("compile").addEventListener("click", el => {
+                location.href = "https://www.students.cs.ubc.ca/~liupiye/compiler/main.html#!" + btoa(document.getElementById("code").value);
+            });
+            document.getElementById("ex1").addEventListener("click", el => {
+                document.getElementById("code").value =
+`(define (mult x y)
+    (begin
+        (define! temp x)
+        (for
+            (define! j 1)   (< j y)   (set! j (add1 j))
+            (set! x (+ temp x)))
+        x))
+
+(define result 0)
+(set! result (call mult 4 3))`;
+            });
+            document.getElementById("ex2").addEventListener("click", el => {
+                document.getElementById("code").value =
+`(define (fib x)
+    (if (< x 2)
+        1
+        (+ (call fib (- x 1))
+           (call fib (- x 2)))))
+
+(define result1 0)
+(define result2 0)
+(define result3 0)
+(define result4 0)
+(define result5 0)
+(set! result1 (call fib 4))
+(set! result2 (call fib 5))
+(set! result3 (call fib 6))
+(set! result4 (call fib 7))
+(set! result5 (call fib 8))`;
+            });
+        </script>
+    </body>
+</html>
