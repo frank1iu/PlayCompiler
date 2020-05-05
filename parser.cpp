@@ -1,11 +1,12 @@
 #include "parser.hpp"
 #include <iostream>
+#include <cstdlib>
 
 vector<string> Parser::split_expressions(string program) {
     vector<string> ret;
     stack<enum Paren> s;
     int last_index = 0;
-    if (!check_valid(program)) throw runtime_error("Syntax Error: Paren Mismatch");
+    if (!check_valid(program)) throw runtime_error("Syntax Error: Paren Mismatch in " + program);
 
     for (unsigned int i = 0; i < program.length(); i++) {
         if (s.empty() && (program[i] == ' ' || program[i] == '\n')) {
@@ -40,7 +41,7 @@ bool Parser::check_valid(string program) {
 }
 
 queue<string> Parser::queue_tokens(string program) {
-    if (!check_valid(program)) throw runtime_error("Syntax Error: Paren Mismatch");
+    if (!check_valid(program)) throw runtime_error("Syntax Error: Paren Mismatch in " + program);
     string program_formatted;
     for (const char c : program) {
         switch (c) {

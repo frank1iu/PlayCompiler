@@ -32,6 +32,9 @@
 *.app
 
 main
+main.js
+main.html
+*.wasm
 runTests
 *.s
 *.rkt

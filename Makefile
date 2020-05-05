@@ -1,6 +1,8 @@
 FLAGS = -std=c++2a -c -g -O0 -Wall -Wextra -pedantic
 LD_FLAGS = -std=c++2a -lpthread -lm
 ifdef WASM
+FLAGS += -fexceptions
+LD_FLAGS += -fexceptions
 CXX = em++
 OBJ = main.html
 else
@@ -33,8 +35,14 @@ runTests: test.o parser.o run-tests.o compiler.o runtime.o
 main.o: main.cpp
 	$(CXX) $(FLAGS) -o main.o main.cpp
 
+ifdef WASM
 $(OBJ): main.o parser.o compiler.o runtime.o
 	$(CXX) $(LD_FLAGS) -o $(OBJ) runtime.o main.o parser.o compiler.o
+	cp main_patched.html main.html
+else
+$(OBJ): main.o parser.o compiler.o runtime.o
+	$(CXX) $(LD_FLAGS) -o $(OBJ) runtime.o main.o parser.o compiler.o
+endif
 
 clean:
-	rm *.o runTests $(OBJ)
+	rm *.o runTests main main.html main.wasm main.js || true
