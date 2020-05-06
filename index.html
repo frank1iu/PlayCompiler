@@ -18,7 +18,7 @@
             <h2 class="margins">Racket to SM213 Assembly Compiler in C++</h2>
             <a href="https://github.com/frank1iu/PlayCompiler">https://github.com/frank1iu/PlayCompiler</a><br>
             <textarea id="code" class="margins" cols=100 rows=15 autocomplete="off" placeholder="Enter Racket code or select from examples..."></textarea><br>
-            <span>Load example: <a href="#" id="ex3">Factorial</a>, <a href="#" id="ex2">Fibonacci</a>, <a href="#" id="ex1">Multiply</a></span><br>
+            <span>Load example: <a href="#" id="ex3">Factorial</a>, <a href="#" id="ex2">Fibonacci</a>, <a href="#" id="ex1">Arrays</a></span><br>
             <button type="button" class="btn btn-primary btn-lg margins" id="compile">Compile!</button><br>
         </div>
         <script>
@@ -27,16 +27,32 @@
             });
             document.getElementById("ex1").addEventListener("click", el => {
                 document.getElementById("code").value =
-`(define (mult x y)
-    (begin
-        (define! temp x)
-        (for
-            (define! j 1)   (< j y)   (set! j (add1 j))
-            (set! x (+ temp x)))
-        x))
+`;; a program that creates an array and populates it so that each
+;; value is equal to its index, if the index is greater than 4
 
-(define result 0)
-(set! result (call mult 4 3))`;
+;; int -> #true or #false
+;; produces true if num is bigger than 4
+(define (is_big num)
+    (> num 4))
+;; tests for is_big
+(void (call expect (call is_big 0) #false))
+(void (call expect (call is_big 4) #false))
+(void (call expect (call is_big 5)  #true))
+
+(define array_start #nullptr) ;; int*
+
+;; preprocessor constants are defined like this
+;#define #arr_size 10
+
+(set! array_start (call array_new #arr_size))
+
+(for                            ;; C equivalent:
+    (define! index 0)           ;; int index = 0
+    (< index #arr_size)         ;; index < arr_size
+    (set! index (add1 index))   ;; index++
+    (if (call is_big index)
+        (call array_set array_start index index)
+        (call array_set array_start index 0)))`;
             });
             document.getElementById("ex2").addEventListener("click", el => {
                 document.getElementById("code").value =
