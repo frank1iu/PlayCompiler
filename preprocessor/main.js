@@ -57,6 +57,7 @@ function init(lines) {
         }
     }
     console.log(ret.filter(line => line !== "").join(" \n"));
+    return ret.filter(line => line !== "").join(" \n");
 }
 
 let lines = [];
