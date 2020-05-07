@@ -1,11 +1,14 @@
-FLAGS = -std=c++2a -c -g -O0 -Wall -Wextra -pedantic
+FLAGS = -std=c++2a -c -Wall -Wextra -pedantic
 LD_FLAGS = -std=c++2a -lpthread -lm
 ifdef WASM
-FLAGS += -fexceptions
-LD_FLAGS += -fexceptions
+# Compilation to WASM results in slow execution
+# Added -O3 flag to hopefully improve performance
+FLAGS += -fexceptions -O3
+LD_FLAGS += -fexceptions -O3
 CXX = em++
 OBJ = main.html
 else
+FLAGS += -g -O0
 CXX = clang++
 OBJ = main
 endif
