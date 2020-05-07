@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
         <style>
             #code {
                 font-family: monospace;
+                box-sizing: border-box;
+                width: 70%;
             }
             .margins {
                 margin-top: 2vh;
@@ -16,86 +20,23 @@
     <body>
         <div style="text-align: center;">
             <h2 class="margins">Racket to SM213 Assembly Compiler in C++</h2>
-            <a href="https://github.com/frank1iu/PlayCompiler">https://github.com/frank1iu/PlayCompiler</a><br>
-            <textarea id="code" class="margins" cols=100 rows=15 autocomplete="off" placeholder="Enter Racket code or select from examples..."></textarea><br>
-            <span>Load example: <a href="#" id="ex3">Factorial</a>, <a href="#" id="ex2">Fibonacci</a>, <a href="#" id="ex1">Arrays</a></span><br>
+            <a href="https://github.com/frank1iu/PlayCompiler" target="_blank">https://github.com/frank1iu/PlayCompiler</a><br>
+            <textarea id="code" class="margins" rows=15 autocomplete="off" placeholder="Enter Racket code or select from examples..."></textarea><br>
+            <span>Load example: 
+                <a href="#" class="example" data-code="KGRlZmluZSAoZmFjdG9yaWFsIG4pCiAgICAoaWYgKGNhbGwgbGVxIG4gMSkKICAgICAgICAxCiAgICAgICAgKGNhbGwgbXVsdCAoY2FsbCBmYWN0b3JpYWwgKHN1YjEgbikpIG4pKSkKCihkZWZpbmUgZmFjdDcgMCkKKGRlZmluZSBmYWN0OCAwKQooZGVmaW5lIGZhY3Q5IDApCihkZWZpbmUgZmFjdDEwIDApCihzZXQhIGZhY3Q3IChjYWxsIGZhY3RvcmlhbCA3KSkKKHNldCEgZmFjdDggKGNhbGwgZmFjdG9yaWFsIDgpKQooc2V0ISBmYWN0OSAoY2FsbCBmYWN0b3JpYWwgOSkpCihzZXQhIGZhY3QxMCAoY2FsbCBmYWN0b3JpYWwgMTApKQo=">Factorial</a>, 
+                <a href="#" class="example" data-code="KGRlZmluZSAoZmliIHgpCiAgICAoaWYgKDwgeCAyKQogICAgICAgIDEKICAgICAgICAoKyAoY2FsbCBmaWIgKC0geCAxKSkKICAgICAgICAgICAoY2FsbCBmaWIgKC0geCAyKSkpKSkKCihkZWZpbmUgcmVzdWx0MSAwKQooZGVmaW5lIHJlc3VsdDIgMCkKKGRlZmluZSByZXN1bHQzIDApCihkZWZpbmUgcmVzdWx0NCAwKQooZGVmaW5lIHJlc3VsdDUgMCkKKHNldCEgcmVzdWx0MSAoY2FsbCBmaWIgNCkpCihzZXQhIHJlc3VsdDIgKGNhbGwgZmliIDUpKQooc2V0ISByZXN1bHQzIChjYWxsIGZpYiA2KSkKKHNldCEgcmVzdWx0NCAoY2FsbCBmaWIgNykpCihzZXQhIHJlc3VsdDUgKGNhbGwgZmliIDgpKQo=">Fibonacci</a>, 
+                <a href="#" class="example" data-code="OzsgYSBwcm9ncmFtIHRoYXQgY3JlYXRlcyBhbiBhcnJheSBhbmQgcG9wdWxhdGVzIGl0IHNvIHRoYXQgZWFjaAo7OyB2YWx1ZSBpcyBlcXVhbCB0byBpdHMgaW5kZXgsIGlmIHRoZSBpbmRleCBpcyBncmVhdGVyIHRoYW4gNAoKOzsgaW50IC0+ICN0cnVlIG9yICNmYWxzZQo7OyBwcm9kdWNlcyB0cnVlIGlmIG51bSBpcyBiaWdnZXIgdGhhbiA0CihkZWZpbmUgKGlzX2JpZyBudW0pCiAgICAoPiBudW0gNCkpCjs7IHRlc3RzIGZvciBpc19iaWcKKHZvaWQgKGNhbGwgZXhwZWN0IChjYWxsIGlzX2JpZyAwKSAjZmFsc2UpKQoodm9pZCAoY2FsbCBleHBlY3QgKGNhbGwgaXNfYmlnIDQpICNmYWxzZSkpCih2b2lkIChjYWxsIGV4cGVjdCAoY2FsbCBpc19iaWcgNSkgICN0cnVlKSkKCihkZWZpbmUgYXJyYXlfc3RhcnQgI251bGxwdHIpIDs7IGludCoKCjs7IHByZXByb2Nlc3NvciBjb25zdGFudHMgYXJlIGRlZmluZWQgbGlrZSB0aGlzCjsjZGVmaW5lICNhcnJfc2l6ZSAxMAoKKHNldCEgYXJyYXlfc3RhcnQgKGNhbGwgYXJyYXlfbmV3ICNhcnJfc2l6ZSkpCgooZm9yICAgICAgICAgICAgICAgICAgICAgICAgICAgIDs7IEMgZXF1aXZhbGVudDoKICAgIChkZWZpbmUhIGluZGV4IDApICAgICAgICAgICA7OyBpbnQgaW5kZXggPSAwCiAgICAoPCBpbmRleCAjYXJyX3NpemUpICAgICAgICAgOzsgaW5kZXggPCBhcnJfc2l6ZQogICAgKHNldCEgaW5kZXggKGFkZDEgaW5kZXgpKSAgIDs7IGluZGV4KysKICAgIChpZiAoY2FsbCBpc19iaWcgaW5kZXgpCiAgICAgICAgKGNhbGwgYXJyYXlfc2V0IGFycmF5X3N0YXJ0IGluZGV4IGluZGV4KQogICAgICAgIChjYWxsIGFycmF5X3NldCBhcnJheV9zdGFydCBpbmRleCAwKSkpCg==">Arrays</a>
+            </span><br>
             <button type="button" class="btn btn-primary btn-lg margins" id="compile">Compile!</button><br>
         </div>
         <script>
             document.getElementById("compile").addEventListener("click", el => {
                 location.href = "https://www.students.cs.ubc.ca/~liupiye/compiler/main.html#!" + btoa(document.getElementById("code").value);
             });
-            document.getElementById("ex1").addEventListener("click", el => {
-                document.getElementById("code").value =
-`;; a program that creates an array and populates it so that each
-;; value is equal to its index, if the index is greater than 4
-
-;; int -> #true or #false
-;; produces true if num is bigger than 4
-(define (is_big num)
-    (> num 4))
-;; tests for is_big
-(void (call expect (call is_big 0) #false))
-(void (call expect (call is_big 4) #false))
-(void (call expect (call is_big 5)  #true))
-
-(define array_start #nullptr) ;; int*
-
-;; preprocessor constants are defined like this
-;#define #arr_size 10
-
-(set! array_start (call array_new #arr_size))
-
-(for                            ;; C equivalent:
-    (define! index 0)           ;; int index = 0
-    (< index #arr_size)         ;; index < arr_size
-    (set! index (add1 index))   ;; index++
-    (if (call is_big index)
-        (call array_set array_start index index)
-        (call array_set array_start index 0)))`;
-            });
-            document.getElementById("ex2").addEventListener("click", el => {
-                document.getElementById("code").value =
-`(define (fib x)
-    (if (< x 2)
-        1
-        (+ (call fib (- x 1))
-           (call fib (- x 2)))))
-
-(define result1 0)
-(define result2 0)
-(define result3 0)
-(define result4 0)
-(define result5 0)
-(set! result1 (call fib 4))
-(set! result2 (call fib 5))
-(set! result3 (call fib 6))
-(set! result4 (call fib 7))
-(set! result5 (call fib 8))`;
-            });
-            document.getElementById("ex3").addEventListener("click", el => {
-                document.getElementById("code").value =
-`(define (mult x y)
-    (begin
-        (define! temp x)
-        (for
-            (define! j 1)   (< j y)   (set! j (add1 j))
-            (set! x (+ temp x)))
-        x))
-
-(define (factorial n)
-    (if (call leq n 1)
-        1
-        (call mult (call factorial (sub1 n)) n)))
-
-(define fact7 0)
-(define fact8 0)
-(define fact9 0)
-(define fact10 0)
-(set! fact7 (call factorial 7))
-(set! fact8 (call factorial 8))
-(set! fact9 (call factorial 9))
-(set! fact10 (call factorial 10))`;
+            Array.from(document.getElementsByClassName("example")).forEach(el => {
+                el.addEventListener("click", () => {
+                    document.getElementById("code").value = atob(el.getAttribute("data-code"));
+                });
             });
         </script>
     </body>
