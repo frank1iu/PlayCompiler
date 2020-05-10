@@ -21,6 +21,9 @@
         <div style="text-align: center;">
             <h2 class="margins">Racket to SM213 Assembly Compiler in C++</h2>
             <a href="https://github.com/frank1iu/PlayCompiler" target="_blank">https://github.com/frank1iu/PlayCompiler</a><br>
+            <div style="margin-top: 2vh; width: 70%; margin-left: auto; margin-right: auto;">SM213 is an instruction set architecture (<a href="https://www.cs.ubc.ca/~tmm/courses/213-12F/resources/isa.pdf" target="_blank">ISA reference</a>)
+                 developed by UBC Computer Science for a computer systems course (CPSC 213). The compiler is written in C++, and the preprocessor is written in Javascript using Node.js. The C++ compiler has been compiled to WebAssembly using <a href="https://emscripten.org/" target="_blank">Emscripten</a>, and the Javascript preprocessor runs normally in the browser.
+                Not all of Racket is implemented - please start with one of the examples.</div><br>
             <textarea id="code" class="margins" rows=15 autocomplete="off" placeholder="Enter Racket code or select from examples..."></textarea><br>
             <span>Load example: 
                 <a href="#" class="example" data-code="KGRlZmluZSAoZmFjdG9yaWFsIG4pCiAgICAoaWYgKGNhbGwgbGVxIG4gMSkKICAgICAgICAxCiAgICAgICAgKGNhbGwgbXVsdCAoY2FsbCBmYWN0b3JpYWwgKHN1YjEgbikpIG4pKSkKCihkZWZpbmUgZmFjdDcgMCkKKGRlZmluZSBmYWN0OCAwKQooZGVmaW5lIGZhY3Q5IDApCihkZWZpbmUgZmFjdDEwIDApCihzZXQhIGZhY3Q3IChjYWxsIGZhY3RvcmlhbCA3KSkKKHNldCEgZmFjdDggKGNhbGwgZmFjdG9yaWFsIDgpKQooc2V0ISBmYWN0OSAoY2FsbCBmYWN0b3JpYWwgOSkpCihzZXQhIGZhY3QxMCAoY2FsbCBmYWN0b3JpYWwgMTApKQo=">Factorial</a>, 
