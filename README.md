@@ -1,8 +1,12 @@
 # PlayCompiler: Racket to SM213 Assembly
 
+## Demo
+
+Try the [online demo](https://www.students.cs.ubc.ca/~liupiye/compiler/)!
+
 ## Requirements
 
-- Any C++ compiler
+- Clang / GCC
 - Node.js
 
 ## Building
