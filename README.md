@@ -4,12 +4,7 @@
 
 Try the [online demo](https://www.students.cs.ubc.ca/~liupiye/compiler/)!
 
-## Requirements
-
-- Clang / GCC
-- Node.js
-
-## Building
+## Quick Start
 
 ### Building Binaries
 ```sh
@@ -19,7 +14,6 @@ make
 ### Building for Web
 Note: Requires [Emscripten](https://emscripten.org/)
 
-Note: Does not support preprocessor
 ```sh
 make WASM=true
 ```
@@ -27,13 +21,16 @@ make WASM=true
 ## Usage
 
 ```sh
-./compile.sh program.rkt
+./compile.sh [file]
+
+# Example: 
+#   ./compile.sh program.rkt
+#   The output will be stored in program.rkt.s
 ```
-The output will be stored in program.rkt.s
 
 ## Example
 
-### Code
+### Racket Code
 
 ```lisp
 ;; a program that creates an array and populates it so that each
@@ -64,25 +61,7 @@ The output will be stored in program.rkt.s
         (call array_set array_start index 0)))
 ```
 
-### Preprocessor Output
-```lisp
-(define (is_big num) 
-(> num 4)) 
-(void (call expect (call is_big 0) 0)) 
-(void (call expect (call is_big 4) 0)) 
-(void (call expect (call is_big 5)  1)) 
-(define array_start 0)  
-(set! array_start (call array_new 10)) 
-(for                             
-(define! index 0)            
-(< index 10)          
-(set! index (add1 index))    
-(if (call is_big index) 
-(call array_set array_start index index) 
-(call array_set array_start index 0)))
-```
-
-### Compiler Output (Abridged - stdlib functions and tests omitted)
+### Compiler Output
 ```asm
 ld  $stacktop, r5
 nop		# [begin function call: array_new]
